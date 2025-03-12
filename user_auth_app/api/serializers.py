@@ -6,7 +6,7 @@ from django.contrib.auth.models import User
 class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserProfile
-        fields = ['user', 'bio']
+        fields = "__all__"
 
 
 class RegistrationSerializer(serializers.ModelSerializer):
@@ -23,24 +23,20 @@ class RegistrationSerializer(serializers.ModelSerializer):
             }
         }
 
-    def save(self):
-        pw = self.validated_data['password']
-        repeated_pw = self.validated_data['repeated_password']
-
-        if pw != repeated_pw:
+    def validate(self, data):
+        """
+        - Stellt sicher, dass die Passwörter übereinstimmen.
+        - Prüft, ob die E-Mail bereits existiert.
+        """
+        if data['password'] != data['repeated_password']:
             raise serializers.ValidationError(
-                {'error': 'passwords dont match!'})
+                {'password': 'Passwords do not match!'})
 
-        # email darf nur einmal vorkommen
-        if User.objects.filter(email=self.validated_data['email']).exists():
+        if User.objects.filter(email=data['email']).exists():
             raise serializers.ValidationError(
-                {'error': 'Email gibt es schon!'})
+                {'email': 'This email is already in use!'})
 
-        account = User(
-            email=self.validated_data['email'], username=self.validated_data['username'])
-        account.set_password(pw)
-        account.save()
-        return account
+        return data
 
     def create(self, validated_data):
         # Entferne `type` vor dem User-Speichern

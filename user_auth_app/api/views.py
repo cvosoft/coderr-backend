@@ -53,6 +53,7 @@ class CustomLoginView(ObtainAuthToken):
             data = {
                 'token': token.key,
                 'username': user.username,
+                'user_id': user.userprofile.id,  #user.id,
                 'email': user.email
             }
         else:
