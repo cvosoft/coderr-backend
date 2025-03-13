@@ -21,7 +21,8 @@ class RegistrationView(APIView):
                 'token': token.key,
                 'username': saved_account.username,
                 'email': saved_account.email,
-                'type': saved_account.userprofile.type  # <-- Hier wird `type` zurückgegeben
+                'user_id': saved_account.id  # <-- Hier die user_id hinzufügen
+                # 'type': saved_account.userprofile.type  # <-- Hier wird `type` zurückgegeben
             }
         else:
             data = serializer.errors

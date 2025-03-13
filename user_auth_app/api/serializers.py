@@ -3,7 +3,6 @@ from backend_app.models import UserProfile
 from django.contrib.auth.models import User
 
 
-
 class RegistrationSerializer(serializers.ModelSerializer):
     repeated_password = serializers.CharField(write_only=True)
     type = serializers.ChoiceField(
@@ -40,7 +39,10 @@ class RegistrationSerializer(serializers.ModelSerializer):
         validated_data.pop('repeated_password')
 
         user = User.objects.create_user(**validated_data)  # User erstellen
-        # UserProfile mit `type` erstellen
-        UserProfile.objects.create(user=user, type=user_type)
+
+        # UserProfile wird durchs signal erstellt
+        # UserProfile.objects.create(user=user, type=user_type)
+        user.userprofile.type = user_type
+        user.userprofile.save()
 
         return user
