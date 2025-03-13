@@ -16,6 +16,7 @@ class UserProfileList(generics.ListCreateAPIView):
 class UserProfileDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = UserProfile.objects.all()
     serializer_class = UserProfileSerializer
+    lookup_field = "user"
 
 
 class RegistrationView(APIView):
@@ -53,7 +54,7 @@ class CustomLoginView(ObtainAuthToken):
             data = {
                 'token': token.key,
                 'username': user.username,
-                'user_id': user.userprofile.id,  #user.id,
+                'user_id': user.id,  # user.id,
                 'email': user.email
             }
         else:
