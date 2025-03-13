@@ -10,25 +10,23 @@ class UserProfile(models.Model):
     ]
 
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    username = models.CharField(max_length=150, blank=True)  # Neu hinzugefügt
-    email = models.EmailField(max_length=255, blank=True)  # Neu hinzugefügt
-    first_name = models.CharField(max_length=30, default="first name")
-    last_name = models.CharField(max_length=30, default="last name")
+    username = models.CharField(max_length=150, blank=True)
+    email = models.EmailField(max_length=255, blank=True)
+    first_name = models.CharField(max_length=30, blank=True, default="")
+    last_name = models.CharField(max_length=30, blank=True, default="")
     file = models.FileField(upload_to='uploads/', default="default.jpg")
-    location = models.CharField(max_length=30, default="location")
-    tel = models.CharField(max_length=30, default="+49 123456789")
-    description = models.CharField(max_length=30, default="description")
-    working_hours = models.CharField(max_length=30, default="24h")
+    location = models.CharField(max_length=30, blank=True, default="")
+    tel = models.CharField(max_length=30, blank=True, default="")
+    description = models.CharField(max_length=30, blank=True, default="")
+    working_hours = models.CharField(max_length=30, blank=True, default="")
     type = models.CharField(
         max_length=10, choices=USER_TYPES, default='customer')
-    created_at = models.DateTimeField(default=now)  # Neu hinzugefügt
+    created_at = models.DateTimeField(default=now)
 
     def save(self, *args, **kwargs):
         if self.user:
             self.username = self.user.username  # Username übernehmen
             self.email = self.user.email  # E-Mail aus dem User übernehmen
-            self.first_name = self.user.first_name  # Optional: First Name übernehmen
-            self.last_name = self.user.last_name  # Optional: Last Name übernehmen
         super().save(*args, **kwargs)
 
     def __str__(self):
