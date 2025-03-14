@@ -43,10 +43,14 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'rest_framework.authtoken',
-    'backend_app',
+    'profiles_app',
+    'base_info_app',
     'user_auth_app',
+    'offers_app',
+    'reviews_app',    
+    'orders_app',    
     'corsheaders',
-    'base_info_app'
+
 ]
 
 

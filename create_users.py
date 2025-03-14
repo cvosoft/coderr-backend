@@ -6,7 +6,7 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'coderr.settings')
 django.setup()
 
 from django.contrib.auth.models import User
-from backend_app.models import UserProfile
+from profiles_app.models import UserProfile
 
 def create_user(username, email, password, user_type):
     if User.objects.filter(username=username).exists():

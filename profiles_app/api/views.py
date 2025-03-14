@@ -1,6 +1,6 @@
 from rest_framework import generics
 from rest_framework.views import APIView
-from backend_app.models import UserProfile
+from profiles_app.models import UserProfile
 from .serializers import UserProfileSerializer
 from rest_framework.permissions import AllowAny
 from rest_framework.authtoken.models import Token
