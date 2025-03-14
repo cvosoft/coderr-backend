@@ -3,38 +3,34 @@ from offers_app.models import Offer, OfferDetail
 from django.db.models import Min
 
 
-class OfferDetailURLSerializer(serializers.ModelSerializer):
-    """ Gibt ID und URL des Details zurück. """
-
-    url = serializers.SerializerMethodField()
-
+class OfferDetailSerializer(serializers.HyperlinkedModelSerializer):
+    """ Serialisiert ein einzelnes OfferDetail mit vollständiger URL """
+    
     class Meta:
         model = OfferDetail
-        fields = ['id', 'url']
-
-    def get_url(self, obj):
-        return f"/offerdetails/{obj.id}/"
-
-
-class UserDetailsSerializer(serializers.Serializer):
-    """ Gibt User-Daten aus. """
-    first_name = serializers.CharField()
-    last_name = serializers.CharField()
-    username = serializers.CharField()
+        fields = ['id', 'title', 'revisions', 'delivery_time_in_days', 'price', 'features', 'offer_type', 'url']
+        extra_kwargs = {
+            'url': {'view_name': 'offer-detail-view', 'lookup_field': 'pk'}
+        }
 
 
-class OfferSerializer(serializers.ModelSerializer):
-    details = OfferDetailURLSerializer(many=True, read_only=True)
+class OfferSerializer(serializers.HyperlinkedModelSerializer):
+    """ Serialisiert ein Offer mit Detail-Links und User-Infos """
+    
+    details = OfferDetailSerializer(many=True, read_only=True)  # Automatisch mit URLs
     min_price = serializers.SerializerMethodField()
     min_delivery_time = serializers.SerializerMethodField()
-    user_details = serializers.SerializerMethodField()
+    user = serializers.PrimaryKeyRelatedField(source='creator', read_only=True)
 
     class Meta:
         model = Offer
         fields = [
-            'id', 'title', 'image', 'description', 'updated_at',
-            'details', 'min_price', 'min_delivery_time', 'user_details'
+            'id', 'user', 'title', 'image', 'description', 'updated_at',
+            'details', 'min_price', 'min_delivery_time', 'url'
         ]
+        extra_kwargs = {
+            'url': {'view_name': 'offer-detail', 'lookup_field': 'pk'}
+        }
 
     def get_min_price(self, obj):
         """ Berechnet den minimalen Preis eines Angebots. """
@@ -43,11 +39,3 @@ class OfferSerializer(serializers.ModelSerializer):
     def get_min_delivery_time(self, obj):
         """ Berechnet die minimale Lieferzeit eines Angebots. """
         return obj.details.aggregate(min_delivery=Min('delivery_time_in_days'))['min_delivery']
-
-    def get_user_details(self, obj):
-        """ Holt User-Details """
-        return {
-            "first_name": obj.creator.first_name,
-            "last_name": obj.creator.last_name,
-            "username": obj.creator.username
-        }

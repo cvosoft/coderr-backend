@@ -1,14 +1,15 @@
+
 from django.db.models import Q, Min
 from rest_framework import generics
 from rest_framework.pagination import PageNumberPagination
-from offers_app.models import Offer
-from .serializers import OfferSerializer
+from offers_app.models import Offer, OfferDetail
+from .serializers import OfferSerializer, OfferDetailSerializer
 
 
 class OfferPagination(PageNumberPagination):
-    page_size = 10  # Standard 10 Einträge pro Seite
-    page_size_query_param = 'page_size'  # Ermöglicht `?page_size=20`
-    max_page_size = 100  # Max. Einträge pro Seite
+    page_size = 10
+    page_size_query_param = 'page_size'
+    max_page_size = 100
 
 
 class OfferListView(generics.ListAPIView):
@@ -22,16 +23,14 @@ class OfferListView(generics.ListAPIView):
         )
         request = self.request
 
-        # Filter nach creator_id (falls vorhanden)
         creator_id = request.query_params.get('creator_id')
         if creator_id:
             try:
                 creator_id = int(creator_id)
                 queryset = queryset.filter(creator__id=creator_id)
             except ValueError:
-                pass  # Falls keine Zahl, ignorieren
+                pass
 
-        # Filter nach min_price
         min_price = request.query_params.get('min_price')
         if min_price:
             try:
@@ -40,7 +39,6 @@ class OfferListView(generics.ListAPIView):
             except ValueError:
                 pass
 
-        # Filter nach max_delivery_time
         max_delivery_time = request.query_params.get('max_delivery_time')
         if max_delivery_time:
             try:
@@ -51,14 +49,13 @@ class OfferListView(generics.ListAPIView):
             except ValueError:
                 pass
 
-        # Suche in title und description
         search_query = request.query_params.get('search')
         if search_query:
             queryset = queryset.filter(
-                Q(title__icontains=search_query) | Q(description__icontains=search_query)
+                Q(title__icontains=search_query) | Q(
+                    description__icontains=search_query)
             )
 
-        # Sortierung (ordering)
         ordering = request.query_params.get('ordering')
         allowed_ordering_fields = ['updated_at', '-updated_at']
 
@@ -67,11 +64,16 @@ class OfferListView(generics.ListAPIView):
         elif ordering in allowed_ordering_fields:
             queryset = queryset.order_by(ordering)
         else:
-            queryset = queryset.order_by('-updated_at')  # Standard: Neuste zuerst
+            queryset = queryset.order_by('-updated_at')
 
         return queryset
 
 
-class OfferDetailView(generics.RetrieveUpdateDestroyAPIView):
+class OfferDetailView(generics.RetrieveAPIView):
     queryset = Offer.objects.all()
     serializer_class = OfferSerializer
+
+
+class OfferDetailRetrieveView(generics.RetrieveAPIView):
+    queryset = OfferDetail.objects.all()
+    serializer_class = OfferDetailSerializer
