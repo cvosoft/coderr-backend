@@ -1,9 +1,9 @@
 from django.urls import path
-from .views import OfferList, OfferDetail
+from .views import OfferListView, OfferDetailView
 
 
 urlpatterns = [
-    path('offers/', OfferList.as_view(), name='offer-list'),
-    path('offers/<int:pk>/', OfferDetail.as_view(),
+    path('offers/', OfferListView.as_view(), name='offer-list'),
+    path('offers/<int:pk>/', OfferDetailView.as_view(),
          name='offer-detail'),
 ]

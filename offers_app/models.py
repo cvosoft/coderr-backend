@@ -1,12 +1,20 @@
 from django.db import models
+# Falls du das Django-User-Modell benutzt
+from django.contrib.auth.models import User
+
 
 class Offer(models.Model):
+    creator = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="offers", default=2)
     title = models.CharField(max_length=255)
     image = models.FileField(upload_to='offers/', null=True, blank=True)
     description = models.TextField()
+    # Wird bei jeder Änderung aktualisiert
+    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.title
+
 
 class OfferDetail(models.Model):
     OFFER_TYPES = [
@@ -15,7 +23,8 @@ class OfferDetail(models.Model):
         ('premium', 'Premium'),
     ]
 
-    offer = models.ForeignKey(Offer, related_name='details', on_delete=models.CASCADE)
+    offer = models.ForeignKey(
+        Offer, related_name='details', on_delete=models.CASCADE)
     title = models.CharField(max_length=255)
     revisions = models.IntegerField()
     delivery_time_in_days = models.IntegerField()
