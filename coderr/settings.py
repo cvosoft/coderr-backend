@@ -47,8 +47,8 @@ INSTALLED_APPS = [
     'base_info_app',
     'user_auth_app',
     'offers_app',
-    'reviews_app',    
-    'orders_app',    
+    'reviews_app',
+    'orders_app',
     'corsheaders',
 
 ]
@@ -142,3 +142,15 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.TokenAuthentication',  # Token-Auth aktivieren!
+        # Falls du Session-Auth nutzen willst
+        'rest_framework.authentication.SessionAuthentication',
+    ),
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',  # Nur eingeloggte User erlauben
+    )
+}
