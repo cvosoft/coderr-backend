@@ -1,5 +1,5 @@
 # Coderr
-[Logo](logo_coderr.svg)
+![Logo](logo_coderr.svg)
 ## A Fiverr clone
 
 The [Frontend](https://github.com/cvosoft/coderr-frontend/) was realized with _VanillaJS_,  
