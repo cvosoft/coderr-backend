@@ -1,17 +1,23 @@
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
+from django.contrib.auth.models import User
 from reviews_app.models import Review
 from .serializers import ReviewSerializer, ReviewCreateSerializer
 
 
-class ReviewListView(generics.ListAPIView):
+class ReviewListCreateView(generics.ListCreateAPIView):
     """
     GET: Listet alle Bewertungen auf. Unterstützt Filter und Sortierung.
+    POST: Erstellt eine neue Bewertung (nur für Kunden erlaubt).
     """
     queryset = Review.objects.all()
     serializer_class = ReviewSerializer
-    permission_classes = [permissions.AllowAny]
+
+    def get_permissions(self):
+        if self.request.method == "POST":
+            return [permissions.IsAuthenticated()]
+        return [permissions.AllowAny()]
 
     def get_queryset(self):
         queryset = Review.objects.all()
@@ -33,14 +39,6 @@ class ReviewListView(generics.ListAPIView):
 
         return queryset
 
-
-class ReviewCreateView(generics.CreateAPIView):
-    """
-    POST: Erstellt eine neue Bewertung. Nur Kunden dürfen bewerten.
-    """
-    serializer_class = ReviewCreateSerializer
-    permission_classes = [permissions.IsAuthenticated]
-
     def create(self, request, *args, **kwargs):
         user = request.user
 
@@ -48,15 +46,19 @@ class ReviewCreateView(generics.CreateAPIView):
         if not hasattr(user, "userprofile") or user.userprofile.type != "customer":
             return Response({"error": "Nur Kunden können Bewertungen erstellen."}, status=status.HTTP_403_FORBIDDEN)
 
-        # Prüfe, ob der Benutzer diesen Business schon bewertet hat
+        # Prüfe, ob der business_user existiert
         business_user_id = request.data.get("business_user")
-        if Review.objects.filter(reviewer=user, business_user_id=business_user_id).exists():
+        business_user = get_object_or_404(User, id=business_user_id)
+
+        # Prüfe, ob der Benutzer diesen Business schon bewertet hat
+        if Review.objects.filter(reviewer=user, business_user=business_user).exists():
             return Response({"error": "Du hast diesen Business bereits bewertet."}, status=status.HTTP_400_BAD_REQUEST)
 
-        return super().create(request, *args, **kwargs)
-
-    def perform_create(self, serializer):
-        serializer.save(reviewer=self.request.user)
+        serializer = ReviewCreateSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save(reviewer=user, business_user=business_user)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class ReviewUpdateView(generics.UpdateAPIView):
