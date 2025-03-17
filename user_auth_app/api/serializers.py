@@ -6,7 +6,7 @@ from django.contrib.auth.models import User
 class RegistrationSerializer(serializers.ModelSerializer):
     repeated_password = serializers.CharField(write_only=True)
     type = serializers.ChoiceField(
-        choices=UserProfile.USER_TYPES, required=True)  # <-- Type hinzufügen
+        choices=UserProfile.USER_TYPES, required=True)
 
     class Meta:
         model = User
@@ -18,10 +18,6 @@ class RegistrationSerializer(serializers.ModelSerializer):
         }
 
     def validate(self, data):
-        """
-        - Stellt sicher, dass die Passwörter übereinstimmen.
-        - Prüft, ob die E-Mail bereits existiert.
-        """
         if data['password'] != data['repeated_password']:
             raise serializers.ValidationError(
                 {'password': 'Passwords do not match!'})
@@ -33,15 +29,11 @@ class RegistrationSerializer(serializers.ModelSerializer):
         return data
 
     def create(self, validated_data):
-        # Entferne `type` vor dem User-Speichern
         user_type = validated_data.pop('type')
-        # Entferne das wiederholte Passwort
         validated_data.pop('repeated_password')
 
-        user = User.objects.create_user(**validated_data)  # User erstellen
+        user = User.objects.create_user(**validated_data)
 
-        # UserProfile wird durchs signal erstellt
-        # UserProfile.objects.create(user=user, type=user_type)
         user.userprofile.type = user_type
         user.userprofile.save()
 
