@@ -50,3 +50,17 @@ class OfferSerializer(serializers.ModelSerializer):
                     offer=instance, **detail_data)  # Neue erstellen
 
         return instance
+
+    def create(self, validated_data):
+        """
+        Erstellt ein neues Offer inkl. der verschachtelten OfferDetails.
+        """
+        details_data = validated_data.pop('details', [])  # Details extrahieren
+        # Erst das Offer speichern
+        offer = Offer.objects.create(**validated_data)
+
+        # Nun die Details separat erstellen
+        for detail in details_data:
+            OfferDetail.objects.create(offer=offer, **detail)
+
+        return offer
