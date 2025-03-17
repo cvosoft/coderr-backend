@@ -31,8 +31,8 @@ class OrderCreateSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         offer_detail = OfferDetail.objects.get(id=validated_data["offer_detail_id"])
-        customer_user = self.context["request"].user  # Der eingeloggte User als Käufer
-        business_user = offer_detail.offer.creator  # Der Ersteller des Offers als Verkäufer
+        customer_user = self.context["request"].user
+        business_user = offer_detail.offer.creator
 
         order = Order.objects.create(
             customer_user=customer_user,

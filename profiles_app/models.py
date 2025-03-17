@@ -25,8 +25,8 @@ class UserProfile(models.Model):
 
     def save(self, *args, **kwargs):
         if self.user:
-            self.username = self.user.username  # Username übernehmen
-            self.email = self.user.email  # E-Mail aus dem User übernehmen
+            self.username = self.user.username
+            self.email = self.user.email
         super().save(*args, **kwargs)
 
     def __str__(self):

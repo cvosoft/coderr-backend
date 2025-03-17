@@ -4,7 +4,6 @@ from django.db.models import Min
 
 
 class OfferDetailSerializer(serializers.ModelSerializer):
-    """ Serializer für ein einzelnes OfferDetail """
     class Meta:
         model = OfferDetail
         fields = ['id', 'title', 'revisions', 'delivery_time_in_days',
@@ -12,9 +11,8 @@ class OfferDetailSerializer(serializers.ModelSerializer):
 
 
 class OfferSerializer(serializers.ModelSerializer):
-    """ Serializer für ein Angebot mit OfferDetails """
     details = OfferDetailSerializer(
-        many=True)  # Setze read_only=False, um Updates zu erlauben
+        many=True)
     min_price = serializers.SerializerMethodField()
     min_delivery_time = serializers.SerializerMethodField()
     user = serializers.PrimaryKeyRelatedField(source='creator', read_only=True)
@@ -35,19 +33,17 @@ class OfferSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         """ Ermöglicht das Aktualisieren von verschachtelten `details` """
         details_data = validated_data.pop(
-            'details', None)  # `details` extrahieren, falls vorhanden
+            'details', None)
 
-        # Aktualisiere die Offer-Daten (z.B. Titel, Beschreibung, etc.)
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
         instance.save()
 
-        # Falls `details` mitgegeben wurden, aktualisiere sie:
         if details_data is not None:
-            instance.details.all().delete()  # Lösche existierende Details
+            instance.details.all().delete()
             for detail_data in details_data:
                 OfferDetail.objects.create(
-                    offer=instance, **detail_data)  # Neue erstellen
+                    offer=instance, **detail_data)
 
         return instance
 
@@ -55,11 +51,11 @@ class OfferSerializer(serializers.ModelSerializer):
         """
         Erstellt ein neues Offer inkl. der verschachtelten OfferDetails.
         """
-        details_data = validated_data.pop('details', [])  # Details extrahieren
-        # Erst das Offer speichern
+        details_data = validated_data.pop('details', [])
+
         offer = Offer.objects.create(**validated_data)
 
-        # Nun die Details separat erstellen
+
         for detail in details_data:
             OfferDetail.objects.create(offer=offer, **detail)
 
