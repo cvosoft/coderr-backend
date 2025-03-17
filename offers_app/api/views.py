@@ -92,9 +92,47 @@ class OfferListView(generics.ListCreateAPIView):
         )
 
 
-class OfferDetailView(generics.RetrieveAPIView):
+class OfferDetailView(generics.RetrieveUpdateDestroyAPIView):
+    """
+    GET: Gibt die Details eines Angebots zurück.
+    PATCH: Aktualisiert ein Angebot (nur der Ersteller kann es ändern).
+    DELETE: Löscht ein Angebot (nur der Ersteller kann es löschen).
+    """
     queryset = Offer.objects.all()
     serializer_class = OfferSerializer
+    # Nur authentifizierte User
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_object(self):
+        """ Holt das spezifische Angebot, überprüft aber auch die Berechtigung. """
+        offer = super().get_object()
+
+        # Sicherstellen, dass nur der Ersteller PATCH oder DELETE durchführen kann
+        if self.request.method in ["PATCH", "DELETE"] and offer.creator != self.request.user:
+            raise PermissionDenied(
+                "Nur der Ersteller kann dieses Angebot ändern oder löschen!")
+
+        return offer
+
+    def update(self, request, *args, **kwargs):
+        """ PATCH: Aktualisiert das Angebot, wenn der Benutzer berechtigt ist. """
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()  # Holt das Angebot
+        serializer = self.get_serializer(
+            instance, data=request.data, partial=partial)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+
+        return Response(serializer.errors, status=400)
+
+    def destroy(self, request, *args, **kwargs):
+        """ DELETE: Löscht das Angebot, wenn der Benutzer berechtigt ist. """
+        instance = self.get_object()
+        self.perform_destroy(instance)
+        # 204 No Content nach erfolgreicher Löschung
+        return Response(status=204)
 
 
 class OfferDetailRetrieveView(generics.RetrieveAPIView):

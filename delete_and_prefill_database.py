@@ -7,11 +7,13 @@ import random
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'coderr.settings')
 django.setup()
 
-# Django-Modelle importieren
-from django.contrib.auth.models import User
-from profiles_app.models import UserProfile
-from offers_app.models import Offer, OfferDetail
 from reviews_app.models import Review
+from offers_app.models import Offer, OfferDetail
+from profiles_app.models import UserProfile
+from django.contrib.auth.models import User
+
+# Pfad für Profilbilder
+PROFILE_IMAGE_PATH = "uploads/profiles/"  
 
 
 def delete_all_data():
@@ -19,8 +21,13 @@ def delete_all_data():
     print("🚨 Lösche alle User, Profile, Angebote und Reviews...")
     Review.objects.all().delete()
     Offer.objects.all().delete()
-    User.objects.all().delete()  # Löscht auch UserProfile durch on_delete=CASCADE
+    User.objects.all().delete()  
     print("✅ Alle Daten wurden erfolgreich gelöscht!")
+
+
+def get_profile_image(username):
+    """ Gibt den Dateipfad des Profilbildes zurück oder `default.jpg`, falls keins existiert """
+    return f"{PROFILE_IMAGE_PATH}{username}.jpg"
 
 
 def create_user(username, email, password, user_type):
@@ -32,17 +39,15 @@ def create_user(username, email, password, user_type):
         print(f"Email '{email}' is already in use!")
         return None
 
-    # Erstelle den User
     user = User.objects.create_user(username=username, email=email, password=password)
 
-    # Stelle sicher, dass ein UserProfile existiert
     user_profile, created = UserProfile.objects.get_or_create(user=user)
     user_profile.type = user_type
+    user_profile.file = get_profile_image(username)  
     user_profile.save()
 
-    print(f"User '{username}' created successfully with type '{user_type}'!")
+    print(f"User '{username}' created successfully with type '{user_type}' and profile image '{user_profile.file}'!")
 
-    # Falls es ein Business-User ist, erstelle ein Offer für ihn
     if user_type == "business":
         create_offer_for_business(user)
 
@@ -50,7 +55,7 @@ def create_user(username, email, password, user_type):
 
 
 def create_offer_for_business(user):
-    """ Erstellt automatisch ein IT-relevantes Angebot für einen Business-User """
+    """ Erstellt automatisch ein IT-relevantes Angebot für jeden Business-User """
     offers_data = [
         {
             "title": "Webentwicklung Komplett-Paket",
@@ -111,20 +116,50 @@ def create_offer_for_business(user):
                     "offer_type": "premium"
                 }
             ]
+        },
+        {
+            "title": "Cybersecurity Beratung",
+            "description": "Expertenberatung für Sicherheitsstrategien und IT-Sicherheit.",
+            "details": [
+                {
+                    "title": "Basic Audit",
+                    "revisions": 1,
+                    "delivery_time_in_days": 7,
+                    "price": 500,
+                    "features": ["Grundlegendes Security Audit", "Bericht mit Empfehlungen"],
+                    "offer_type": "basic"
+                },
+                {
+                    "title": "Standard Audit",
+                    "revisions": 3,
+                    "delivery_time_in_days": 14,
+                    "price": 1200,
+                    "features": ["Umfassendes Security Audit", "Bericht mit detaillierten Handlungsempfehlungen", "Firewall-Check"],
+                    "offer_type": "standard"
+                },
+                {
+                    "title": "Premium Audit",
+                    "revisions": 5,
+                    "delivery_time_in_days": 21,
+                    "price": 3000,
+                    "features": ["Tiefgehende Sicherheitsanalyse", "Penetrationstests", "Schwachstellenbehebung"],
+                    "offer_type": "premium"
+                }
+            ]
         }
     ]
 
-    # Zufälliges Angebot für diesen Business-User auswählen
-    offer_data = offers_data[len(User.objects.filter(userprofile__type="business")) % len(offers_data)]
+    # Weise jedem Business-User ein Angebot basierend auf der Reihenfolge zu
+    business_users = list(User.objects.filter(userprofile__type="business"))
+    assigned_offer = offers_data[business_users.index(user) % len(offers_data)]
 
     offer = Offer.objects.create(
-        title=offer_data["title"],
-        description=offer_data["description"],
+        title=assigned_offer["title"],
+        description=assigned_offer["description"],
         creator=user
     )
 
-    # Angebot-Details erstellen
-    for detail in offer_data["details"]:
+    for detail in assigned_offer["details"]:
         OfferDetail.objects.create(
             offer=offer,
             title=detail["title"],
@@ -153,9 +188,8 @@ def create_reviews():
     ]
 
     for customer in customers:
-        business_user = random.choice(business_users)  # Zufälligen Business-User auswählen
+        business_user = random.choice(business_users)
 
-        # Prüfen, ob diese Bewertung schon existiert
         if not Review.objects.filter(reviewer=customer, business_user=business_user).exists():
             review_data = random.choice(reviews_data)
             Review.objects.create(
@@ -168,23 +202,15 @@ def create_reviews():
 
 
 if __name__ == "__main__":
-    # Zuerst alle Daten löschen
     delete_all_data()
 
     users_to_create = [
-        # Neue Kunden (Customer)
         {"username": "andrey", "email": "customer@example.com", "password": "asdasd", "user_type": "customer"},
-        {"username": "emma", "email": "emma@example.com", "password": "customer1", "user_type": "customer"},
-        {"username": "oliver", "email": "oliver@example.com", "password": "customer2", "user_type": "customer"},
-        {"username": "mia", "email": "mia@example.com", "password": "customer3", "user_type": "customer"},
-        {"username": "noah", "email": "noah@example.com", "password": "customer4", "user_type": "customer"},
-
-        # Neue Geschäftsleute (Business)
+        {"username": "peter", "email": "peter@example.com", "password": "customer1", "user_type": "customer"},
+        {"username": "sophia", "email": "sophia@example.com", "password": "customer2", "user_type": "customer"},
         {"username": "kevin", "email": "business@example.com", "password": "asdasd24", "user_type": "business"},
-        {"username": "sophia", "email": "sophia@example.com", "password": "business1", "user_type": "business"},
-        {"username": "liam", "email": "liam@example.com", "password": "business2", "user_type": "business"},
-        {"username": "ava", "email": "ava@example.com", "password": "business3", "user_type": "business"},
-        {"username": "ethan", "email": "ethan@example.com", "password": "business4", "user_type": "business"},
+        {"username": "christoph", "email": "christoph@example.com", "password": "dsaggda", "user_type": "business"},
+        {"username": "helga", "email": "helga@example.com", "password": "business2", "user_type": "business"},
     ]
 
     for user_data in users_to_create:

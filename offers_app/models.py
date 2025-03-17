@@ -6,7 +6,7 @@ class Offer(models.Model):
     creator = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name="offers")
     title = models.CharField(max_length=255)
-    image = models.FileField(upload_to='offers/', null=True, blank=True)
+    image = models.FileField(upload_to='uploads/offers/', null=True, blank=True)
     description = models.TextField()
     updated_at = models.DateTimeField(auto_now=True)
 

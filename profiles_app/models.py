@@ -14,7 +14,7 @@ class UserProfile(models.Model):
     email = models.EmailField(max_length=255, blank=True)
     first_name = models.CharField(max_length=30, blank=True, default="")
     last_name = models.CharField(max_length=30, blank=True, default="")
-    file = models.FileField(upload_to='uploads/', default="default.jpg")
+    file = models.FileField(upload_to='uploads/profiles/', default="default.jpg")
     location = models.CharField(max_length=30, blank=True, default="")
     tel = models.CharField(max_length=30, blank=True, default="")
     description = models.CharField(max_length=30, blank=True, default="")
