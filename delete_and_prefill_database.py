@@ -59,6 +59,7 @@ def create_offer_for_business(user):
     offers_data = [
         {
             "title": "Webentwicklung Komplett-Paket",
+            "image": "uploads/offers/web.jpg",
             "description": "Ein maßgeschneidertes Webdesign-Paket für Unternehmen.",
             "details": [
                 {
@@ -89,6 +90,7 @@ def create_offer_for_business(user):
         },
         {
             "title": "App-Entwicklung",
+            "image": "uploads/offers/app.jpg",
             "description": "Native oder Hybrid-App-Lösungen für Ihr Business.",
             "details": [
                 {
@@ -119,6 +121,7 @@ def create_offer_for_business(user):
         },
         {
             "title": "Cybersecurity Beratung",
+            "image": "uploads/offers/cyber.jpg",
             "description": "Expertenberatung für Sicherheitsstrategien und IT-Sicherheit.",
             "details": [
                 {
@@ -156,7 +159,8 @@ def create_offer_for_business(user):
     offer = Offer.objects.create(
         title=assigned_offer["title"],
         description=assigned_offer["description"],
-        creator=user
+        creator=user,
+        image=assigned_offer["image"]
     )
 
     for detail in assigned_offer["details"]:
