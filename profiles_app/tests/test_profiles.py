@@ -7,9 +7,9 @@ from django.contrib.auth.models import User
 from rest_framework.authtoken.models import Token
 
 
-class GetProfile(APITestCase):
+class ProfileTests(APITestCase):
 
-    def get_profile_success(self):
+    def test_get_profile_success(self):
         url = reverse('userprofile-detail')
         response = self.client.get(url, format="json")
 
