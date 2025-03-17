@@ -1,9 +1,10 @@
 
 from django.db.models import Q, Min
-from rest_framework import generics
+from rest_framework import generics, permissions
 from rest_framework.pagination import PageNumberPagination
 from offers_app.models import Offer, OfferDetail
 from .serializers import OfferSerializer, OfferDetailSerializer
+from rest_framework.response import Response
 
 
 class OfferPagination(PageNumberPagination):
@@ -12,9 +13,14 @@ class OfferPagination(PageNumberPagination):
     max_page_size = 100
 
 
-class OfferListView(generics.ListAPIView):
+class OfferListView(generics.ListCreateAPIView):
     serializer_class = OfferSerializer
     pagination_class = OfferPagination
+
+    def get_permissions(self):
+        if self.request.method == "POST":
+            return [permissions.IsAuthenticated()]  # Nur eingeloggte User
+        return [permissions.AllowAny()]  # GET ist für alle erlaubt
 
     def get_queryset(self):
         queryset = Offer.objects.annotate(
@@ -67,6 +73,27 @@ class OfferListView(generics.ListAPIView):
             queryset = queryset.order_by('-updated_at')
 
         return queryset
+
+    def perform_create(self, serializer):
+        """
+        Speichert ein neues Angebot, falls der Benutzer ein Business-User ist.
+        """
+        user = self.request.user
+
+        # Prüfen, ob der eingeloggte User ein Business ist
+        if not hasattr(user, "userprofile") or user.userprofile.type != "business":
+            raise permissions.PermissionDenied(
+                "Nur Business-User können Angebote erstellen!"
+            )
+
+        # Speichert das Angebot mit dem eingeloggten User als Ersteller
+        offer = serializer.save(creator=user)
+
+        # ✅ Gibt `201 Created` mit den erstellten Daten zurück
+        return Response(
+            OfferSerializer(offer, context={'request': self.request}).data,
+            status=201  # `201 Created`
+        )
 
 
 class OfferDetailView(generics.RetrieveAPIView):

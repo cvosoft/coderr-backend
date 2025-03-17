@@ -4,6 +4,7 @@ from rest_framework import status
 from unittest.mock import patch
 from reviews_app.models import Review
 from django.contrib.auth.models import User
+from rest_framework.authtoken.models import Token
 
 
 class OffersTests(APITestCase):
@@ -14,10 +15,19 @@ class OffersTests(APITestCase):
             username="testuser", password="dsgdsggds"
         )
 
+        self.user.userprofile.type = "business"
+        self.user.userprofile.save()
+
+        # Token für den Benutzer erstellen
+        self.token = Token.objects.create(user=self.user)
+
+        # Authentifizierungs-Header setzen
+        self.client.credentials(HTTP_AUTHORIZATION=f'Token {self.token.key}')
+
     def test_post_offer(self):
         data = {
             "title": "Grafikdesign-Paket",
-            "image": null,  # type: ignore
+            "image": None,
             "description": "Ein umfassendes Grafikdesign-Paket für Unternehmen.",
             "details": [
                 {
@@ -60,7 +70,7 @@ class OffersTests(APITestCase):
         }
 
         response = self.client.post(self.url, data, format="json")
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
     def test_get_offers_success(self):
 
