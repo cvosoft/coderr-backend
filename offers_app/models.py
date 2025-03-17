@@ -1,15 +1,13 @@
 from django.db import models
-# Falls du das Django-User-Modell benutzt
 from django.contrib.auth.models import User
 
 
 class Offer(models.Model):
     creator = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name="offers", default=2)
+        User, on_delete=models.CASCADE, related_name="offers")
     title = models.CharField(max_length=255)
     image = models.FileField(upload_to='offers/', null=True, blank=True)
     description = models.TextField()
-    # Wird bei jeder Änderung aktualisiert
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):

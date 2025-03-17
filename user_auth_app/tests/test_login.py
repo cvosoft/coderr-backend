@@ -8,11 +8,11 @@ from rest_framework.authtoken.models import Token
 class LoginTests(APITestCase):
 
     def setUp(self):
+        self.url = reverse('login')
         self.user = User.objects.create_user(
             username="testuser", password="dsgdsggds"
         )
         self.token = Token.objects.create(user=self.user)
-        self.url = reverse('login')
 
     def test_login_success(self):
         data = {
