@@ -30,3 +30,13 @@ class ProfileTests(APITestCase):
         response = self.client.get(url, format="json")
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_patch_profile_email(self):
+        url = reverse('userprofile-detail',
+                      kwargs={'user': self.user.id})
+        data = {
+            "email": "changed@gmx.de"
+        }
+        response = self.client.patch(url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["email"], "changed@gmx.de")
