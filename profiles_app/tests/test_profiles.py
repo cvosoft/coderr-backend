@@ -15,7 +15,7 @@ class ProfileTests(APITestCase):
             username="testuser", password="dsgdsggds"
         )
 
-        self.user.userprofile.type = "customer"
+        self.user.userprofile.type = "business" # customer / business
         self.user.userprofile.save()
 
         # Token für den Benutzer erstellen

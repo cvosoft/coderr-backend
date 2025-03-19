@@ -71,3 +71,4 @@ class OffersTestsSuccess(APITestCase):
 
         response = self.client.post(self.url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+

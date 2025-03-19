@@ -1,18 +1,27 @@
 from rest_framework import serializers
 from offers_app.models import Offer, OfferDetail
 from django.db.models import Min
+from django.urls import reverse
 
 
-class OfferDetailSerializer(serializers.ModelSerializer):
+class OfferDetailSerializer(serializers.HyperlinkedModelSerializer):
+    """ Serializer für ein einzelnes OfferDetail mit URL-Referenz """
     class Meta:
         model = OfferDetail
-        fields = ['id', 'title', 'revisions', 'delivery_time_in_days',
-                  'price', 'features', 'offer_type']
+        fields = ['id', 'url']  # Gibt nur ID und URL zurück
+        extra_kwargs = {
+            'url': {'view_name': 'offer-detail-view', 'lookup_field': 'pk'}
+        }
 
 
 class OfferSerializer(serializers.ModelSerializer):
-    details = OfferDetailSerializer(
-        many=True)
+    # details = serializers.HyperlinkedRelatedField(
+    #     many=True,
+    #     read_only=True,
+    #     view_name='offer-detail-view',
+    #     lookup_field='pk'
+    # )
+    details = serializers.SerializerMethodField()
     min_price = serializers.SerializerMethodField()
     min_delivery_time = serializers.SerializerMethodField()
     user = serializers.PrimaryKeyRelatedField(source='creator', read_only=True)
@@ -20,8 +29,19 @@ class OfferSerializer(serializers.ModelSerializer):
     class Meta:
         model = Offer
         fields = [
-            'id', 'user', 'title', 'image', 'description', 'updated_at',
+            'id', 'user', 'title', 'image', 'description', 'created_at', 'updated_at',
             'details', 'min_price', 'min_delivery_time'
+        ]
+
+    def get_details(self, obj):
+        """ Gibt die Offer-Details als Liste von Objekten mit ID und URL zurück """
+        request = self.context.get('request')
+        return [
+            {
+                "id": detail.id,
+                "url": request.build_absolute_uri(reverse("offer-detail-view", kwargs={"pk": detail.id}))
+            }
+            for detail in obj.details.all()
         ]
 
     def get_min_price(self, obj):
@@ -54,7 +74,6 @@ class OfferSerializer(serializers.ModelSerializer):
         details_data = validated_data.pop('details', [])
 
         offer = Offer.objects.create(**validated_data)
-
 
         for detail in details_data:
             OfferDetail.objects.create(offer=offer, **detail)
