@@ -26,6 +26,12 @@ class OfferSerializer(serializers.ModelSerializer):
     min_delivery_time = serializers.SerializerMethodField()
     user = serializers.PrimaryKeyRelatedField(source='creator', read_only=True)
 
+    # Hier das gewünschte Datumsformat definieren (ohne Mikrosekunden)
+    created_at = serializers.DateTimeField(
+        format="%Y-%m-%dT%H:%M:%SZ", read_only=True)
+    updated_at = serializers.DateTimeField(
+        format="%Y-%m-%dT%H:%M:%SZ")
+
     class Meta:
         model = Offer
         fields = [
