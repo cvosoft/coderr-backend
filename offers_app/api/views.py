@@ -1,9 +1,8 @@
-
 from django.db.models import Q, Min
 from rest_framework import generics, permissions, status
 from rest_framework.pagination import PageNumberPagination
 from offers_app.models import Offer, OfferDetail
-from .serializers import OfferSerializer, OfferDetailSerializer
+from .serializers import OfferSerializer, OfferDetailSerializer, OfferDetailURLSerializer
 from rest_framework.response import Response
 from rest_framework.exceptions import PermissionDenied
 
@@ -59,8 +58,7 @@ class OfferListView(generics.ListCreateAPIView):
         search_query = request.query_params.get('search')
         if search_query:
             queryset = queryset.filter(
-                Q(title__icontains=search_query) | Q(
-                    description__icontains=search_query)
+                Q(title__icontains=search_query) | Q(description__icontains=search_query)
             )
 
         ordering = request.query_params.get('ordering')
@@ -80,8 +78,7 @@ class OfferListView(generics.ListCreateAPIView):
         user = self.request.user
 
         if not hasattr(user, "userprofile") or user.userprofile.type != "business":
-            raise PermissionDenied(
-                "Nur Business-User können Angebote erstellen!")
+            raise PermissionDenied("Nur Business-User können Angebote erstellen!")
 
         offer = serializer.save(creator=user)
 
@@ -100,16 +97,16 @@ class OfferDetailView(generics.RetrieveUpdateDestroyAPIView):
         offer = super().get_object()
 
         if self.request.method in ["PATCH", "DELETE"] and offer.creator != self.request.user:
-            raise PermissionDenied(
-                "Nur der Ersteller kann dieses Angebot ändern oder löschen!")
+            raise PermissionDenied("Nur der Ersteller kann dieses Angebot ändern oder löschen!")
 
         return offer
 
     def update(self, request, *args, **kwargs):
         partial = kwargs.pop('partial', False)
-        instance = self.get_object() 
+        instance = self.get_object()
         serializer = self.get_serializer(
-            instance, data=request.data, partial=partial)
+            instance, data=request.data, partial=partial, context={'request': request}
+        )
 
         if serializer.is_valid():
             serializer.save()
@@ -124,5 +121,6 @@ class OfferDetailView(generics.RetrieveUpdateDestroyAPIView):
 
 
 class OfferDetailRetrieveView(generics.RetrieveAPIView):
+    """ Gibt die vollständigen OfferDetail-Daten zurück """
     queryset = OfferDetail.objects.all()
-    serializer_class = OfferDetailSerializer
+    serializer_class = OfferDetailSerializer  # Korrekte Nutzung des Serializers

@@ -43,7 +43,7 @@ class GetOffersTests(APITestCase):
         url = reverse('offer-list')
         response = self.client.get(url, format="json")
 
-        print(response.data)
+        #print(response.data)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 

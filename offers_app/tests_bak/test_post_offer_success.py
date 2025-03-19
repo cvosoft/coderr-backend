@@ -70,5 +70,8 @@ class OffersTestsSuccess(APITestCase):
         }
 
         response = self.client.post(self.url, data, format="json")
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
+        # 👉 Debug-Print: Gibt den API-Response aus, falls der Test fehlschlägt
+        #print("🚨 API RESPONSE:", response.data)
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
