@@ -11,20 +11,16 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 from pathlib import Path
-import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-MEDIA_URL = '/media/'
 
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-#4b5w%amj6qt-nl-ptj6jr22(j^9*)h5_793*5!6g$c44qon)7'
+SECRET_KEY = 'django-insecure-qya2-(-9t)frlh701isq1(wkzjp(w%1+kf-tox^i3(wl+x)=3m'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -43,19 +39,11 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'rest_framework.authtoken',
-    'profiles_app',
-    'base_info_app',
-    'user_auth_app',
-    'offers_app',
-    'reviews_app',
-    'orders_app',
-    'corsheaders',
-
+    'userauth_app',
+    'profiles_app'
 ]
 
-
 MIDDLEWARE = [
-    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -64,11 +52,6 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
-
-CORS_ALLOWED_ORIGINS = [
-    "http://127.0.0.1:5500",  # Beispiel für eine Live Server Extension in VS Code
-]
-
 
 ROOT_URLCONF = 'coderr.urls'
 
@@ -145,12 +128,11 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
 REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework.authentication.TokenAuthentication',  # Token-Auth aktivieren!
-        # Falls du Session-Auth nutzen willst
-        'rest_framework.authentication.SessionAuthentication',
-    ),
-    'DEFAULT_PERMISSION_CLASSES': (
-        'rest_framework.permissions.IsAuthenticated',  # Nur eingeloggte User erlauben
-    )
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticatedOrReadOnly',
+    ],
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+    ],
+
 }

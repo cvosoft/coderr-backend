@@ -1,6 +1,2 @@
 venv/
-__pycache__/
-user_auth_app/__pycache__/
-user_auth_app/api/__pycache__/
-coderr/__pycache__/
-backend_app/__pycache__/
+

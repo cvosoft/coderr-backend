@@ -3,31 +3,31 @@ from django.contrib.auth.models import User
 from django.utils.timezone import now
 
 
+# Create your models here.
+
+
 class UserProfile(models.Model):
     USER_TYPES = [
         ('customer', 'Customer'),
         ('business', 'Business'),
     ]
 
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
-    username = models.CharField(max_length=150, blank=True)
-    email = models.EmailField(max_length=255, blank=True)
-    first_name = models.CharField(max_length=30, blank=True, default="")
-    last_name = models.CharField(max_length=30, blank=True, default="")
+    user = models.OneToOneField(
+        User, on_delete=models.CASCADE)  # mit User verknüpft
+    username = models.CharField(max_length=255)
+    first_name = models.CharField(max_length=255)
+    last_name = models.CharField(max_length=255)
     file = models.FileField(upload_to='uploads/profiles/', default="default.jpg")
-    location = models.CharField(max_length=30, blank=True, default="")
-    tel = models.CharField(max_length=30, blank=True, default="")
-    description = models.CharField(max_length=30, blank=True, default="")
-    working_hours = models.CharField(max_length=30, blank=True, default="")
+    location = models.CharField(max_length=255)
+    tel = models.CharField(max_length=255)
+    description = models.CharField(max_length=255)
+    working_hours = models.CharField(max_length=255)
     type = models.CharField(
         max_length=10, choices=USER_TYPES, default='customer')
+    email = models.EmailField(max_length=254)
     created_at = models.DateTimeField(default=now)
 
-    def save(self, *args, **kwargs):
-        if self.user:
-            self.username = self.user.username
-            self.email = self.user.email
-        super().save(*args, **kwargs)
-
+    
+    # so wird es angezeigt im backend panel
     def __str__(self):
         return f"{self.user.username} - {self.type}"
