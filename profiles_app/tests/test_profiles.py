@@ -8,28 +8,34 @@ from rest_framework.authtoken.models import Token
 class ProfileTests(APITestCase):
 
     def setUp(self):
-        self.user = User.objects.create_user(
-            username="testuser", password="dsgdsggds"
-        )
+        url = reverse('registration')
 
-        # Token für den Benutzer erstellen
-        self.token = Token.objects.create(user=self.user)
+        data = {
+            "username": "exampleUsername",
+            "email": "example@mail.de",
+            "password": "examplePassword",
+            "repeated_password": "examplePassword",
+            "type": "customer"
+        }
+
+        response = self.client.post(url, data, format="json")
+
+        self.token = response.data['token']
+        self.user_id = response.data['user_id']
 
         # Authentifizierungs-Header setzen
-        self.client.credentials(HTTP_AUTHORIZATION=f'Token {self.token.key}')
+        self.client.credentials(HTTP_AUTHORIZATION=f'Token {self.token}')
 
     def test_get_profile_success(self):
         url = reverse('profile-detail',
-                      kwargs={'user': self.user.id})
+                      kwargs={'user': self.user_id})
         response = self.client.get(url, format="json")
-        
-        print(url)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_patch_profile_email(self):
         url = reverse('profile-detail',
-                      kwargs={'user': self.user.id})
+                      kwargs={'user': self.user_id})
         data = {
             "email": "changed@gmx.de"
         }
