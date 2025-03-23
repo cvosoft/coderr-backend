@@ -17,7 +17,10 @@ class OffersListAllAndPostSingleView(mixins.ListModelMixin, mixins.CreateModelMi
                        filters.SearchFilter,
                        filters.OrderingFilter]
     filterset_class = OfferFilter
-
+    search_fields = ['title', 'description']
+    ordering_fields = ['min_price', 'updated_at']
+    permission_classes = [IsAuthenticated]
+    pagination_class = ResultsSetPagination
 
     # unterschiedliche serializer für listenview und singlepost
 
@@ -26,9 +29,6 @@ class OffersListAllAndPostSingleView(mixins.ListModelMixin, mixins.CreateModelMi
             return OffersListSerializer
         # bei POST
         return OfferWriteSerializer
-
-    permission_classes = [IsAuthenticated]
-    pagination_class = ResultsSetPagination
 
     def get(self, request, *args, **kwargs):
         return self.list(request, *args, **kwargs)
