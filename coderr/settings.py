@@ -146,6 +146,7 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.IsAuthenticated',
     ],
     'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.SessionAuthentication', # zum auth sachen testen
         'rest_framework.authentication.TokenAuthentication',
     ],
 
