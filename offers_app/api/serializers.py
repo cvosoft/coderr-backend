@@ -44,7 +44,7 @@ class OffersListSerializer(serializers.ModelSerializer):
 
     def get_user_details(self, obj):
         try:
-            #user_id ist der automatisch erzeugte Feldname für einen ForeignKey
+            # user_id ist der automatisch erzeugte Feldname für einen ForeignKey
             profile = UserProfile.objects.get(
                 user_id=obj.user_id)
         except UserProfile.DoesNotExist:
@@ -81,11 +81,22 @@ class SingleOfferListSerializer(serializers.ModelSerializer):
 
     details = OfferDetailURLSerializer(many=True)
 
+    # zusatzfelder, wo was berechet wird
+    min_price = serializers.SerializerMethodField()
+    min_delivery_time = serializers.SerializerMethodField()
+
     class Meta:
         model = Offer
         # hier nur die felder, die ich zurückbekommen will:
         fields = ["id", "user", "title", "image", "description",
-                  "details", "created_at", "updated_at"]
+                  "details", "created_at", "updated_at",
+                  'min_price', 'min_delivery_time']
+
+    def get_min_price(self, obj):
+        return obj.details.aggregate(min_price=Min('price'))['min_price']
+
+    def get_min_delivery_time(self, obj):
+        return obj.details.aggregate(min_time=Min('delivery_time_in_days'))['min_time']
 
 
 # serializer zum lesen/GET eines Offers
