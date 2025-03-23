@@ -49,7 +49,8 @@ INSTALLED_APPS = [
     'baseview_app',
     'offers_app',
     'orders_app',
-    'reviews_app'
+    'reviews_app',
+    'django_filters'
 ]
 
 MIDDLEWARE = [
@@ -146,8 +147,8 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.IsAuthenticated',
     ],
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.SessionAuthentication', # zum auth sachen testen
+        'rest_framework.authentication.SessionAuthentication',  # zum auth sachen testen
         'rest_framework.authentication.TokenAuthentication',
     ],
-
+    'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend']
 }

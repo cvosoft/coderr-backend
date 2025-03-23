@@ -3,14 +3,24 @@ from offers_app.models import Offer, OfferDetails
 from .serializers import SingleOfferListSerializer, OfferWriteSerializer, OffersListSerializer, OfferDetailSerializer, OfferDetailURLSerializer
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from .pagination import ResultsSetPagination
+from rest_framework import filters
+from django_filters.rest_framework import DjangoFilterBackend
+from .filters import OfferFilter
 
 
 # für gesamtliste und fürs posten
 # path('offers/', OffersListAllAndPostSingleView.as_view(), name='offers-list'),
 class OffersListAllAndPostSingleView(mixins.ListModelMixin, mixins.CreateModelMixin, generics.GenericAPIView):
+
     queryset = Offer.objects.all()
+    filter_backends = [DjangoFilterBackend,
+                       filters.SearchFilter,
+                       filters.OrderingFilter]
+    filterset_class = OfferFilter
+
 
     # unterschiedliche serializer für listenview und singlepost
+
     def get_serializer_class(self):
         if self.request.method == 'GET':
             return OffersListSerializer
