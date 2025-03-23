@@ -150,5 +150,8 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.SessionAuthentication',  # zum auth sachen testen
         'rest_framework.authentication.TokenAuthentication',
     ],
-    'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend']
+    'DEFAULT_FILTER_BACKENDS':
+        ['django_filters.rest_framework.DjangoFilterBackend'],
+    'DATETIME_FORMAT':
+        "%Y-%m-%dT%H:%M:%SZ",
 }
