@@ -2,6 +2,7 @@ from rest_framework import generics, mixins
 from offers_app.models import Offer, OfferDetails
 from .serializers import SingleOfferListSerializer, OfferWriteSerializer, OffersListSerializer, OfferDetailSerializer, OfferDetailURLSerializer
 from rest_framework.permissions import AllowAny, IsAuthenticated
+from .pagination import ResultsSetPagination
 
 
 # für gesamtliste und fürs posten
@@ -17,6 +18,7 @@ class OffersListAllAndPostSingleView(mixins.ListModelMixin, mixins.CreateModelMi
         return OfferWriteSerializer
 
     permission_classes = [IsAuthenticated]
+    pagination_class = ResultsSetPagination
 
     def get(self, request, *args, **kwargs):
         return self.list(request, *args, **kwargs)
