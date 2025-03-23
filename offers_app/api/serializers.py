@@ -1,5 +1,7 @@
 from rest_framework import serializers
 from offers_app.models import Offer, OfferDetails
+from django.db.models import Min
+from profiles_app.models import UserProfile
 
 
 class OfferDetailURLSerializer(serializers.HyperlinkedModelSerializer):
@@ -21,11 +23,38 @@ class OffersListSerializer(serializers.ModelSerializer):
     details = OfferDetailURLSerializer(many=True)
     # -> das muss ein hyperlinked teil sein!
 
+    # zusatzfelder, wo was berechet wird
+    min_price = serializers.SerializerMethodField()
+    min_delivery_time = serializers.SerializerMethodField()
+    user_details = serializers.SerializerMethodField()
+
     class Meta:
         model = Offer
         # sonst gibts ärger beim erstellen, weil es erforderlich ist
         fields = ['id', 'user', 'title', 'details', 'image',
-                  'description', 'created_at', 'updated_at']
+                  'description', 'created_at', 'updated_at',
+                  'min_price', 'min_delivery_time',
+                  'user_details']
+
+    def get_min_price(self, obj):
+        return obj.details.aggregate(min_price=Min('price'))['min_price']
+
+    def get_min_delivery_time(self, obj):
+        return obj.details.aggregate(min_time=Min('delivery_time_in_days'))['min_time']
+
+    def get_user_details(self, obj):
+        try:
+            #user_id ist der automatisch erzeugte Feldname für einen ForeignKey
+            profile = UserProfile.objects.get(
+                user_id=obj.user_id)
+        except UserProfile.DoesNotExist:
+            return {}
+
+        return {
+            "first_name": profile.first_name,
+            "last_name": profile.last_name,
+            "username": profile.username,
+        }
 
 
 class OfferWriteSerializer(serializers.ModelSerializer):
