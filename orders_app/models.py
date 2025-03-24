@@ -1,21 +1,27 @@
 from django.db import models
+from django.contrib.auth.models import User
+from offers_app.models import OfferDetails, Offer
+
 
 # Create your models here.
 
 
 class Order(models.Model):
 
-    customer_user = models.CharField(max_length=255)
-    business_user = models.CharField(max_length=255)
-    title = models.CharField(max_length=255)
-    revisions = models.CharField(max_length=255)
-    delivery_time_in_days = models.CharField(max_length=255)
-    price = models.CharField(max_length=255)
-    features = models.CharField(max_length=255)
-    offer_type = models.CharField(max_length=255)
-    status = models.CharField(max_length=255)
-    created_at = models.CharField(max_length=255)
-    updated_at = models.CharField(max_length=255)
+    ORDER_STATUS_CATEGORIES = [
+        ("in_progress", "In Progress"),
+        ("completed", "Completed"),
+        ("cancelled", "Cancelled"),
+    ]
+
+    customer_user = models.OneToOneField(
+        User, on_delete=models.CASCADE, related_name="customer_user")
+    business_user = models.OneToOneField(
+        User, on_delete=models.CASCADE, related_name="business_user")
+    status = models.CharField(
+        max_length=255, choices=ORDER_STATUS_CATEGORIES, default="in_progress")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     # so wird es angezeigt im backend panel
 

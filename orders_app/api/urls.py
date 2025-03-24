@@ -1,10 +1,11 @@
 from django.urls import path
-from .views import
+from .views import PostOrderView, UpdateOrderView, GetOrderCountView, GetCompletedOrderView
 
 urlpatterns = [
-    path('orders/', OffersListAllAndPostSingleView.as_view(), name='orders-list'),
-    path('order-count/<pk>/',
-         OffersListAllAndPostSingleView.as_view(), name='orders-list'),
-    path('completed-order-count/<pk>/',
-         OffersListAllAndPostSingleView.as_view(), name='orders-list'),
+    path('orders/', PostOrderView.as_view(), name='order-post'),
+    path('orders/<int:pk>/', UpdateOrderView.as_view(), name='order-update'),
+    path('order-count/<int:pk>/',
+         GetOrderCountView.as_view(), name='order-count'),
+    path('completed-order-count/<int:pk>/',
+         GetCompletedOrderView.as_view(), name='order-completed-count'),
 ]
