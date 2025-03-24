@@ -28,7 +28,7 @@ class OrderSerializer(serializers.ModelSerializer):
         return obj.offerdetails.offer_type         
 
     def get_title(self, obj):
-        return obj.offerdetails.offer.title  #hier titel des OFFERS!!
+        return obj.offerdetails.offer.title  #hier titel des OFFERS nicht des offerdetails!!
 
     class Meta:
         model = Order
