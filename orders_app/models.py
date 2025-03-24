@@ -14,6 +14,8 @@ class Order(models.Model):
         ("cancelled", "Cancelled"),
     ]
 
+    offerdetails = models.OneToOneField(
+        OfferDetails, on_delete=models.CASCADE, related_name="related_offerdetails")
     customer_user = models.OneToOneField(
         User, on_delete=models.CASCADE, related_name="customer_user")
     business_user = models.OneToOneField(

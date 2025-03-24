@@ -15,6 +15,7 @@ class UpdateOrderView(generics.RetrieveUpdateDestroyAPIView):
 
 
 # path('orders/', PostOrderView.as_view(), name='order-post'),
+# bei apiview brauche ich keine serializer
 class PostOrderView(APIView):
     permission_classes = [AllowAny]
 
@@ -29,20 +30,35 @@ class PostOrderView(APIView):
         except OfferDetails.DoesNotExist:
             return Response({"error": "OfferDetail nicht gefunden."}, status=status.HTTP_404_NOT_FOUND)
 
-        # Beispiel: neue Order basierend auf OfferDetail
-        print(detail.offer)
+        # neue Order basierend auf OfferDetail
+        # print(detail.offer)
         order = Order.objects.create(
             business_user=detail.offer.user,  # nicht creator!!
             customer_user=request.user,
-            status="in_progress"
+            status="in_progress",
+            offerdetails=detail # es braucht die ganze instanz, nicht die id
         )
 
         return Response({
-            "message": "Order erfolgreich erstellt.",
-            "order_id": order.id,
-            "offer_title": detail.offer.title,
-            "detail_price": detail.price
+            "id": order.id,
+            "customer_user": request.user.id,
+            "business_user": detail.offer.user.id,
+            "title": detail.offer.title,
+            "revisions": detail.revisions,
+            "delivery_time_in_days": detail.delivery_time_in_days,
+            "price": detail.price,
+            "features": detail.features,
+            "offer_type": detail.offer_type,
+            "status": order.status,
+            "created_at": order.created_at,
+            "updated_at": order.updated_at
         }, status=status.HTTP_201_CREATED)
+
+    def get(self, request):
+        orders = Order.objects.all()
+        serializer = OrderSerializer(
+            orders, many=True, context={'request': request})
+        return Response(serializer.data)
 
 
 # path('order-count/<int:pk>/', GetOrderCountView.as_view(), name='order-count')
