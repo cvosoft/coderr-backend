@@ -1,13 +1,33 @@
 from rest_framework import generics
-from .serializers import ReviewsSerializer
+from .serializers import ReviewsSerializer, ReviewsPOSTSerializer
 from reviews_app.models import Reviews
+from rest_framework import viewsets
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import filters
+
+# class ReviewsDetailView(generics.RetrieveUpdateDestroyAPIView):
+#     queryset = Reviews.objects.all()
+#     serializer_class = ReviewsSerializer
 
 
-class ReviewsDetailView(generics.RetrieveUpdateDestroyAPIView):
+# class ReviewsView(generics.ListCreateAPIView):
+#     queryset = Reviews.objects.all()
+#     serializer_class = ReviewsSerializer
+
+
+class ReviewViewSet(viewsets.ModelViewSet):
+
     queryset = Reviews.objects.all()
-    serializer_class = ReviewsSerializer
+    filter_backends = [DjangoFilterBackend,
+                       filters.OrderingFilter]
+    ordering_fields = ['rating', 'updated_at']
+    filterset_fields = ['business_user_id', 'reviewer_id']
 
+    def get_serializer_class(self):
+        if self.action in ['list', 'retrieve']:
+            return ReviewsSerializer  # Für GET-Anfragen
+        return ReviewsPOSTSerializer      # Für POST, PUT, PATCH
 
-class ReviewsView(generics.ListCreateAPIView):
-    queryset = Reviews.objects.all()
-    serializer_class = ReviewsSerializer
+    # sorgt dafür dass reviewer id automatisch intern gespeichert wird
+    def perform_create(self, serializer):
+        serializer.save(reviewer=self.request.user)
