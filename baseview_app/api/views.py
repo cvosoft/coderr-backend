@@ -2,6 +2,9 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
 from offers_app.models import Offer
+from reviews_app.models import Reviews
+from django.db.models import Avg
+from profiles_app.models import UserProfile
 
 
 class BaseInfoView(APIView):
@@ -9,8 +12,8 @@ class BaseInfoView(APIView):
 
     def get(self, request):
         return Response({
-            "review_count": 10,
-            "average_rating": 4.6,
-            "business_profile_count": 45,
+            "review_count": Reviews.objects.count(),
+            "average_rating": Reviews.objects.aggregate(average_rating=Avg('rating'))['average_rating'],
+            "business_profile_count": UserProfile.objects.filter(type='business').count(),
             "offer_count": Offer.objects.count()
         })
