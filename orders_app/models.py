@@ -14,12 +14,12 @@ class Order(models.Model):
         ("cancelled", "Cancelled"),
     ]
 
-    offerdetails = models.OneToOneField(
-        OfferDetails, on_delete=models.CASCADE, related_name="related_offerdetails")
-    customer_user = models.OneToOneField(
-        User, on_delete=models.CASCADE, related_name="customer_user")
-    business_user = models.OneToOneField(
-        User, on_delete=models.CASCADE, related_name="business_user")
+    offerdetails = models.ForeignKey(
+        OfferDetails, on_delete=models.CASCADE, related_name="orders")
+    customer_user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="customer_orders")
+    business_user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="business_orders")
     status = models.CharField(
         max_length=255, choices=ORDER_STATUS_CATEGORIES, default="in_progress")
     created_at = models.DateTimeField(auto_now_add=True)

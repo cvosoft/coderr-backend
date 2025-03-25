@@ -36,7 +36,7 @@ class PostOrderView(APIView):
             business_user=detail.offer.user,  # nicht creator!!
             customer_user=request.user,
             status="in_progress",
-            offerdetails=detail # es braucht die ganze instanz, nicht die id
+            offerdetails=detail  # es braucht die ganze instanz, nicht die id
         )
 
         return Response({
@@ -65,9 +65,11 @@ class PostOrderView(APIView):
 class GetOrderCountView(APIView):
     permission_classes = [AllowAny]
 
-    def get(self, request):
+    def get(self, request, business_user):  # wird in der url übergeben
+        count = Order.objects.filter(
+            business_user=business_user, status="in_progress").count()
         return Response({
-            "order_count": Order.objects.count()
+            "order_count": count
         })
 
 
@@ -75,7 +77,9 @@ class GetOrderCountView(APIView):
 class GetCompletedOrderView(APIView):
     permission_classes = [AllowAny]
 
-    def get(self, request):
+    def get(self, request, business_user):  # wird in der url übergeben
+        count = Order.objects.filter(
+            business_user=business_user, status="completed").count()
         return Response({
-            "completed_order_count": Order.objects.count()
+            "completed_order_count": count
         })
