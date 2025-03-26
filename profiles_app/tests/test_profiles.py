@@ -36,7 +36,7 @@ class ProfileTests(APITestCase):
             "type": "business"
         }
         response = self.client.post(url, data2, format="json")
-        #print(response.data)
+        # print(response.data)
         self.user_id2 = response.data['user_id']
 
     def test_get_profile_success(self):
@@ -48,11 +48,13 @@ class ProfileTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_get_profile_no_auth(self):
-        # Authentifizierungs-Header setzen
-        self.client.credentials(HTTP_AUTHORIZATION=f'Token xxx')
+        # keinen Authentifizierungs-Header setzen
+        self.client.credentials()  # (HTTP_AUTHORIZATION=f'Token xxx')
         url = reverse('profile-detail',
                       kwargs={'user': self.user_id})
         response = self.client.get(url, format="json")
+        # print("Status-Code:", response.status_code)
+        # print("Antwort:", response.data)
 
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
@@ -74,3 +76,28 @@ class ProfileTests(APITestCase):
         }
         response = self.client.patch(url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_get_profile_notfound(self):
+        url = reverse('profile-detail',
+                      kwargs={'user': 132235235})
+        response = self.client.get(url, format="json")
+        # print("Status-Code:", response.status_code)
+        # print("Antwort:", response.data)
+
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_get_businessprofiles(self):
+        url = reverse('profiles-business-list')
+        response = self.client.get(url, format="json")
+        # print("Status-Code:", response.status_code)
+        # print("Antwort:", response.data)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_customerprofiles(self):
+        url = reverse('profiles-customer-list')
+        response = self.client.get(url, format="json")
+        # print("Status-Code:", response.status_code)
+        # print("Antwort:", response.data)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)

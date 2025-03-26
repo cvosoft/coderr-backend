@@ -2,6 +2,7 @@ from rest_framework import generics
 from profiles_app.models import UserProfile
 from .serializers import UserProfileSerializer
 from .permissions import IsOwnerOrAdmin
+from rest_framework.permissions import IsAuthenticated
 
 
 
