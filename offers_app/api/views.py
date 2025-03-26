@@ -6,6 +6,7 @@ from .pagination import ResultsSetPagination
 from rest_framework import filters
 from django_filters.rest_framework import DjangoFilterBackend
 from .filters import OfferFilter
+from .permissions import IsBusinessUser, IsOwnerOrAdmin
 
 
 # für gesamtliste und fürs posten
@@ -19,10 +20,19 @@ class OffersListAllAndPostSingleView(mixins.ListModelMixin, mixins.CreateModelMi
     filterset_class = OfferFilter
     search_fields = ['title', 'description']
     ordering_fields = ['min_price', 'updated_at']
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [AllowAny]
     pagination_class = ResultsSetPagination
 
     # unterschiedliche serializer für listenview und singlepost
+
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return [AllowAny()]
+        if self.request.method == 'POST':
+            return [IsBusinessUser()]
+        if self.request.method in ['PATCH', 'DELETE']:
+            return [IsOwnerOrAdmin()]        
+        return [IsAuthenticated()]
 
     def get_serializer_class(self):
         if self.request.method == 'GET':

@@ -13,7 +13,7 @@ class UserProfile(models.Model):
     ]
 
     user = models.OneToOneField(
-        User, on_delete=models.CASCADE)  # mit User verknüpft (ein user - ein profil)
+        User, on_delete=models.CASCADE, related_name="profile")  # mit User verknüpft (ein user - ein profil)
     username = models.CharField(max_length=255)
     first_name = models.CharField(max_length=255)
     last_name = models.CharField(max_length=255)
