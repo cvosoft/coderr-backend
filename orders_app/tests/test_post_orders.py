@@ -87,12 +87,51 @@ class GetOrdersTests(APITestCase):
         response = self.client.post(url, data, format="json")
         self.offerdetail_id = response.data['details'][0]['id']
 
-    def test_post_order(self):
+    def test_post_order_as_business(self):
         url = reverse('orders-list')
         data = {
             "offer_detail_id": self.offerdetail_id
         }
         response = self.client.post(url, data, format="json")
-        print(response.data)
+        # print(response.data)
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_post_order_without_auth(self):
+        self.client.credentials()
+        url = reverse('orders-list')
+        data = {
+            "offer_detail_id": self.offerdetail_id
+        }
+        response = self.client.post(url, data, format="json")
+        # print(response.data)
+
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_post_order_success(self):
+        self.client.credentials(HTTP_AUTHORIZATION=f'Token {self.token2}')
+        url = reverse('orders-list')
+        data = {
+            "offer_detail_id": self.offerdetail_id
+        }
+        response = self.client.post(url, data, format="json")
+        # print(response.data)
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        expected_keys = [
+            "id",
+            "customer_user",
+            "business_user",
+            "title",
+            "revisions",
+            "delivery_time_in_days",
+            "price",
+            "features",
+            "offer_type",
+            "status",
+            "created_at",
+            "updated_at"
+        ]
+
+        for key in expected_keys:
+            self.assertIn(key, response.data)
