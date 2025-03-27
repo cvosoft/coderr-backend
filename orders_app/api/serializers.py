@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from orders_app.models import Order
+from offers_app.models import OfferDetails
 
 
 class OrderSerializer(serializers.ModelSerializer):
@@ -14,22 +15,44 @@ class OrderSerializer(serializers.ModelSerializer):
 
     def get_revisions(self, obj):
         return obj.offerdetails.revisions
-    
+
     def get_delivery_time_in_days(self, obj):
         return obj.offerdetails.delivery_time_in_days
 
     def get_price(self, obj):
-        return obj.offerdetails.price        
+        return obj.offerdetails.price
 
     def get_features(self, obj):
-        return obj.offerdetails.features    
+        return obj.offerdetails.features
 
     def get_offer_type(self, obj):
-        return obj.offerdetails.offer_type         
+        return obj.offerdetails.offer_type
 
     def get_title(self, obj):
-        return obj.offerdetails.offer.title  #hier titel des OFFERS nicht des offerdetails!!
+        # hier titel des OFFERS nicht des offerdetails!!
+        return obj.offerdetails.offer.title
 
     class Meta:
         model = Order
         fields = '__all__'
+
+
+class OrderCreateSerializer(serializers.Serializer):
+    offer_detail_id = serializers.IntegerField()
+
+    def create(self, validated_data):
+        request = self.context['request']
+        offer_detail_id = validated_data['offer_detail_id']
+
+        try:
+            detail = OfferDetails.objects.get(id=offer_detail_id)
+        except OfferDetails.DoesNotExist:
+            raise serializers.ValidationError(
+                "OfferDetail wurde nicht gefunden.")
+
+        return Order.objects.create(
+            offerdetails=detail,
+            customer_user=request.user,
+            business_user=detail.offer.user,
+            status="in_progress"
+        )

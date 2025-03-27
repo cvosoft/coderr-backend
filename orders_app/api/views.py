@@ -1,10 +1,12 @@
 from rest_framework import generics, mixins, status
 from orders_app.models import Order
 from offers_app.models import OfferDetails
-from .serializers import OrderSerializer
+from .serializers import *
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework import viewsets
+from rest_framework.decorators import action
 
 
 # path('orders/<int:pk>/', UpdateOrderView.as_view(), name='order-update'),
@@ -83,3 +85,25 @@ class GetCompletedOrderView(APIView):
         return Response({
             "completed_order_count": count
         })
+
+
+class OrderViewSet(viewsets.ModelViewSet):
+    queryset = Order.objects.all()
+
+    def get_serializer_class(self):
+        if self.action == "create":
+            return OrderCreateSerializer
+        return OrderSerializer
+
+    def get_permissions(self):
+        if self.action in ['create']:
+            return [IsAuthenticated()]
+
+    def create(self, request, *args, **kwargs):
+        """Überschreibt create, um benutzerdefiniertes Response-Objekt zu liefern"""
+        serializer = self.get_serializer(
+            data=request.data, context={'request': request})
+        serializer.is_valid(raise_exception=True)
+        order = serializer.save()
+
+        return Response(OrderSerializer(order, context={'request': request}).data, status=status.HTTP_201_CREATED)
