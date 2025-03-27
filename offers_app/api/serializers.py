@@ -56,10 +56,6 @@ class OffersListSerializer(serializers.ModelSerializer):
             "username": profile.username,
         }
 
-# so ist es:
-#2025-03-26T16:00:19Z
-# so soll es:
-#2024-09-25T10:00:00Z"
 
 class OfferWriteSerializer(serializers.ModelSerializer):
 
@@ -79,6 +75,23 @@ class OfferWriteSerializer(serializers.ModelSerializer):
         for detail_data in details_data:
             OfferDetails.objects.create(offer=offer, **detail_data)
         return offer
+
+    # update brauche ich wegen der nested sache
+    def update(self, instance, validated_data):
+        details_data = validated_data.pop('details', None)
+
+        # Felder am Haupt-Objekt aktualisieren
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+
+        # Falls neue Details mitgesendet wurden → alte löschen & neu anlegen
+        if details_data is not None:
+            instance.details.all().delete()
+            for detail_data in details_data:
+                OfferDetails.objects.create(offer=instance, **detail_data)
+
+        return instance
 
 
 class SingleOfferListSerializer(serializers.ModelSerializer):

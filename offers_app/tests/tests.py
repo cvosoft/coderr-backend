@@ -134,11 +134,11 @@ class OffersTests(APITestCase):
         }
         response = self.client.post(url, data, format="json")
 
-        # die id des ersten details:
-        detail_id = response.data["details"][0]['id']
+        # die id des gesamten offers!
+        offer_id = response.data['id']
 
-        url = reverse('offerdetails-detail',
-                      kwargs={'pk': detail_id})
+        url = reverse('offers-detail',
+                      kwargs={'pk': offer_id})
 
         data2 = {
             "title": "Updated Grafikdesign-Paket",
@@ -161,4 +161,120 @@ class OffersTests(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-        print(response.data)
+        # print(response.data)
+
+    def test_get_offerdetail(self):
+
+        url = reverse('offers-list')
+        data = {
+            "title": "Grafikdesign-Paket",
+            "image": None,
+            "description": "Ein umfassendes Grafikdesign-Paket für Unternehmen.",
+            "details": [
+                {
+                    "title": "Basic Design",
+                    "revisions": 2,
+                    "delivery_time_in_days": 5,
+                    "price": 100,
+                    "features": [
+                        "Logo Design",
+                        "Visitenkarte"
+                    ],
+                    "offer_type": "basic"
+                },
+                {
+                    "title": "Standard Design",
+                    "revisions": 5,
+                    "delivery_time_in_days": 7,
+                    "price": 200,
+                    "features": [
+                        "Logo Design",
+                        "Visitenkarte",
+                        "Briefpapier"
+                    ],
+                    "offer_type": "standard"
+                },
+                {
+                    "title": "Premium Design",
+                    "revisions": 10,
+                    "delivery_time_in_days": 10,
+                    "price": 500,
+                    "features": [
+                        "Logo Design",
+                        "Visitenkarte",
+                        "Briefpapier",
+                        "Flyer"
+                    ],
+                    "offer_type": "premium"
+                }
+            ]
+        }
+        response = self.client.post(url, data, format="json")
+
+        # die id des ersten offerdetails
+        detail_id = response.data['details'][0]['id']
+
+        url = reverse('offerdetails-detail',
+                      kwargs={'pk': detail_id})
+
+        response = self.client.get(url, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_delete_offer(self):
+
+        url = reverse('offers-list')
+        data = {
+            "title": "Grafikdesign-Paket",
+            "image": None,
+            "description": "Ein umfassendes Grafikdesign-Paket für Unternehmen.",
+            "details": [
+                {
+                    "title": "Basic Design",
+                    "revisions": 2,
+                    "delivery_time_in_days": 5,
+                    "price": 100,
+                    "features": [
+                        "Logo Design",
+                        "Visitenkarte"
+                    ],
+                    "offer_type": "basic"
+                },
+                {
+                    "title": "Standard Design",
+                    "revisions": 5,
+                    "delivery_time_in_days": 7,
+                    "price": 200,
+                    "features": [
+                        "Logo Design",
+                        "Visitenkarte",
+                        "Briefpapier"
+                    ],
+                    "offer_type": "standard"
+                },
+                {
+                    "title": "Premium Design",
+                    "revisions": 10,
+                    "delivery_time_in_days": 10,
+                    "price": 500,
+                    "features": [
+                        "Logo Design",
+                        "Visitenkarte",
+                        "Briefpapier",
+                        "Flyer"
+                    ],
+                    "offer_type": "premium"
+                }
+            ]
+        }
+        response = self.client.post(url, data, format="json")
+
+        offer_id = response.data['id']
+        
+
+        url = reverse('offers-detail',
+                      kwargs={'pk': offer_id})
+
+        response = self.client.delete(url, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
