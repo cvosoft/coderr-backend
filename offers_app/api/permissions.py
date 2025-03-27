@@ -18,3 +18,4 @@ class IsOwnerOrAdmin(BasePermission):
         elif request.method == "PATCH":
             return bool(request.user == obj.user)
         return False
+

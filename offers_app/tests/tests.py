@@ -85,3 +85,80 @@ class OffersTests(APITestCase):
         response = self.client.post(url, data, format="json")
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_patch_offer(self):
+
+        url = reverse('offers-list')
+        data = {
+            "title": "Grafikdesign-Paket",
+            "image": None,
+            "description": "Ein umfassendes Grafikdesign-Paket für Unternehmen.",
+            "details": [
+                {
+                    "title": "Basic Design",
+                    "revisions": 2,
+                    "delivery_time_in_days": 5,
+                    "price": 100,
+                    "features": [
+                        "Logo Design",
+                        "Visitenkarte"
+                    ],
+                    "offer_type": "basic"
+                },
+                {
+                    "title": "Standard Design",
+                    "revisions": 5,
+                    "delivery_time_in_days": 7,
+                    "price": 200,
+                    "features": [
+                        "Logo Design",
+                        "Visitenkarte",
+                        "Briefpapier"
+                    ],
+                    "offer_type": "standard"
+                },
+                {
+                    "title": "Premium Design",
+                    "revisions": 10,
+                    "delivery_time_in_days": 10,
+                    "price": 500,
+                    "features": [
+                        "Logo Design",
+                        "Visitenkarte",
+                        "Briefpapier",
+                        "Flyer"
+                    ],
+                    "offer_type": "premium"
+                }
+            ]
+        }
+        response = self.client.post(url, data, format="json")
+
+        # die id des ersten details:
+        detail_id = response.data["details"][0]['id']
+
+        url = reverse('offerdetails-detail',
+                      kwargs={'pk': detail_id})
+
+        data2 = {
+            "title": "Updated Grafikdesign-Paket",
+            "details": [
+                {
+                    "title": "Basic Design Updated",
+                    "revisions": 3,
+                    "delivery_time_in_days": 6,
+                    "price": 120,
+                    "features": [
+                        "Logo Design",
+                        "Flyer"
+                    ],
+                    "offer_type": "basic"
+                }
+            ]
+        }
+
+        response = self.client.patch(url, data2, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        print(response.data)

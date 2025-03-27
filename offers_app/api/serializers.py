@@ -56,6 +56,10 @@ class OffersListSerializer(serializers.ModelSerializer):
             "username": profile.username,
         }
 
+# so ist es:
+#2025-03-26T16:00:19Z
+# so soll es:
+#2024-09-25T10:00:00Z"
 
 class OfferWriteSerializer(serializers.ModelSerializer):
 

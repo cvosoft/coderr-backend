@@ -23,16 +23,16 @@ class OffersListAllAndPostSingleView(mixins.ListModelMixin, mixins.CreateModelMi
     # permission_classes = [AllowAny]
     pagination_class = ResultsSetPagination
 
-    # unterschiedliche serializer für listenview und singlepost
-
     def get_permissions(self):
         if self.request.method == 'GET':
             return [AllowAny()]
         if self.request.method == 'POST':
             return [IsBusinessUser()]
         if self.request.method in ['PATCH', 'DELETE']:
-            return [IsOwnerOrAdmin()]        
+            return [IsOwnerOrAdmin()]
         return [IsAuthenticated()]
+
+    # unterschiedliche serializer für listenview und singlepost
 
     def get_serializer_class(self):
         if self.request.method == 'GET':
@@ -55,8 +55,7 @@ class OffersListAllAndPostSingleView(mixins.ListModelMixin, mixins.CreateModelMi
 class SingleOfferDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = OfferDetails.objects.all()
     serializer_class = OfferDetailSerializer  # hier NICHT die URLS!
-    # serializer_class = OfferDetailURLSerializer
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
 
 
 # path('offers/<int:pk>/', SingleOfferView.as_view(), name='offer-single'),
@@ -68,7 +67,3 @@ class SingleOfferView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAuthenticated]
 
 
-# class CreateSingleOfferView(generics.RetrieveUpdateDestroyAPIView):
-#     queryset = Offer.objects.all()
-#     serializer_class = OfferWriteSerializer
-#     permission_classes = [AllowAny]
