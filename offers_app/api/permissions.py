@@ -15,7 +15,6 @@ class IsOwnerOrAdmin(BasePermission):
     def has_object_permission(self, request, view, obj):
         if request.method in SAFE_METHODS:
             return True
-        elif request.method == "PATCH":
+        elif request.method in ["PATCH", "DELETE"]:
             return bool(request.user == obj.user)
         return False
-

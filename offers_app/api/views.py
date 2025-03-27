@@ -37,7 +37,7 @@ class OfferViewSet(viewsets.ModelViewSet):
         elif self.action == 'retrieve':
             return SingleOfferListSerializer
         elif self.action == 'partial_update':
-            pass
+            return OfferWriteSerializer
         elif self.action == 'destroy':
             return SingleOfferListSerializer
         return OfferWriteSerializer  # fallback

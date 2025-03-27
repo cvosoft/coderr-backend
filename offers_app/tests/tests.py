@@ -270,7 +270,6 @@ class OffersTests(APITestCase):
         response = self.client.post(url, data, format="json")
 
         offer_id = response.data['id']
-        
 
         url = reverse('offers-detail',
                       kwargs={'pk': offer_id})
@@ -278,3 +277,4 @@ class OffersTests(APITestCase):
         response = self.client.delete(url, format="json")
 
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertIsNone(response.data)
