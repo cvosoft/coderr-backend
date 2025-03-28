@@ -101,3 +101,21 @@ class ProfileTests(APITestCase):
         # print("Antwort:", response.data)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_customer_profiles_no_auth(self):
+        self.client.credentials()
+        url = reverse('profiles-customer-list')
+        response = self.client.get(url, format="json")
+        # print("Status-Code:", response.status_code)
+        # print("Antwort:", response.data)
+
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_get_business_profiles_no_auth(self):
+        self.client.credentials()
+        url = reverse('profiles-business-list')
+        response = self.client.get(url, format="json")
+        # print("Status-Code:", response.status_code)
+        # print("Antwort:", response.data)
+
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)

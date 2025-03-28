@@ -29,7 +29,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
     # Einteilung Permissions
     def get_permissions(self):
         if self.request.method == 'GET':
-            return [IsAuthenticated()]
+            return [IsAuthUser()]
         if self.request.method == 'POST':
             return [IsCustomerUser()]
         if self.request.method in ['PATCH', 'DELETE']:

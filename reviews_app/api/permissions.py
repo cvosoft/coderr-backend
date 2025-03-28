@@ -15,6 +15,14 @@ class IsAuthUser(BasePermission):
 
 
 class IsOwnerOrAdmin(BasePermission):
+    def has_permission(self, request, view):
+        user = request.user
+
+        if not user or not user.is_authenticated:
+            raise CustomAuthenticationFailed()
+
+        return True
+
     def has_object_permission(self, request, view, obj):
         if request.method in SAFE_METHODS:
             return True

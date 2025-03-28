@@ -5,7 +5,6 @@ from .permissions import IsOwnerOrAdmin
 from rest_framework.permissions import IsAuthenticated
 
 
-
 class UserProfileDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = UserProfile.objects.all()
     serializer_class = UserProfileSerializer
@@ -15,6 +14,7 @@ class UserProfileDetail(generics.RetrieveUpdateDestroyAPIView):
 
 class CustomerProfileList(generics.ListCreateAPIView):
     serializer_class = UserProfileSerializer
+    permission_classes = [IsOwnerOrAdmin]
 
     def get_queryset(self):
         return UserProfile.objects.filter(type='customer')
@@ -22,6 +22,7 @@ class CustomerProfileList(generics.ListCreateAPIView):
 
 class BusinessProfileList(generics.ListCreateAPIView):
     serializer_class = UserProfileSerializer
+    permission_classes = [IsOwnerOrAdmin]
 
     def get_queryset(self):
         return UserProfile.objects.filter(type='business')
