@@ -5,15 +5,17 @@ from rest_framework import viewsets
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, status
 from rest_framework.response import Response
-
-# class ReviewsDetailView(generics.RetrieveUpdateDestroyAPIView):
-#     queryset = Reviews.objects.all()
-#     serializer_class = ReviewsSerializer
+from .permissions import *
+from rest_framework.permissions import AllowAny, IsAuthenticated
 
 
-# class ReviewsView(generics.ListCreateAPIView):
-#     queryset = Reviews.objects.all()
-#     serializer_class = ReviewsSerializer
+################
+# GET /api/offers/ - list
+# POST /api/offers/ - create
+# GET /api/offers/{id}/ - retrieve
+# PATCH /api/offers/{id}/ - partial update
+# DELETE /api/offers/{id}/ - destroy
+#################
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
@@ -23,6 +25,16 @@ class ReviewViewSet(viewsets.ModelViewSet):
                        filters.OrderingFilter]
     ordering_fields = ['rating', 'updated_at']
     filterset_fields = ['business_user_id', 'reviewer_id']
+
+    # Einteilung Permissions
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return [IsAuthenticated()]
+        if self.request.method == 'POST':
+            return [IsCustomerUser()]
+        if self.request.method in ['PATCH', 'DELETE']:
+            return [IsOwnerOrAdmin()]
+        return [IsAuthenticated()]
 
     def get_serializer_class(self):
         if self.action in ['list', 'retrieve']:
@@ -40,3 +52,15 @@ class ReviewViewSet(viewsets.ModelViewSet):
 
         output_serializer = ReviewsSerializer(instance)
         return Response(output_serializer.data, status=status.HTTP_201_CREATED)
+
+    # nach dem PATCH voller output!
+    def partial_update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(
+            instance, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+
+        # Nach dem Speichern – Ausgabe mit vollständigem Serializer
+        output_serializer = ReviewsSerializer(instance)
+        return Response(output_serializer.data)

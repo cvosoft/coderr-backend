@@ -50,7 +50,46 @@ class ReviewsTests(APITestCase):
         response = self.client.post(url, data, format="json")
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        # Erwartete Keys
+        expected_keys = [
+            "id",
+            "business_user",
+            "reviewer",
+            "rating",
+            "description",
+            "created_at",
+            "updated_at"
+        ]
+
+        for key in expected_keys:
+            self.assertIn(key, response.data)
+
+    def test_patch_review(self):
+        # Authentifizierungs-Header setzen
+        self.client.credentials(HTTP_AUTHORIZATION=f'Token {self.token2}')
+
+        data = {
+            "business_user": self.user_id1,
+            "rating": 4,
+            "description": "Alles war toll!"
+        }
+
+        url = reverse('reviews-list')
+
+        response = self.client.post(url, data, format="json")
+        review_id = response.data["id"]
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        url = reverse('reviews-detail', kwargs={"pk": review_id})
+
+        data = {
+            "rating": 1,
+            "description": "schlimm1!"
+        }
+
+        response = self.client.patch(url, data, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         expected_keys = [
             "id",
             "business_user",
