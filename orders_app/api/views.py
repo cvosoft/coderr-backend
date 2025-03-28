@@ -1,8 +1,9 @@
 from rest_framework import generics, mixins, status
 from orders_app.models import Order
 from offers_app.models import OfferDetails
+from profiles_app.models import UserProfile
 from .serializers import *
-from .permissions import IsCustomerUser, IsBusinessUser
+from .permissions import *
 from rest_framework.permissions import AllowAny, IsAuthenticated, IsAdminUser
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -11,9 +12,18 @@ from rest_framework.decorators import action
 
 
 class GetOrderCountView(APIView):
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthUser]
 
     def get(self, request, business_user):  # wird in der url übergeben
+        # abfangen wenn kein business_user
+        try:
+            profile = UserProfile.objects.get(user__id=business_user)
+        except UserProfile.DoesNotExist:
+            return Response({"error": "UserProfile wurde nicht gefunden."}, status=status.HTTP_404_NOT_FOUND)
+
+        if profile.type != "business":
+            return Response({"error": "Kein Business-User."}, status=status.HTTP_404_NOT_FOUND)
+
         count = Order.objects.filter(
             business_user=business_user, status="in_progress").count()
         return Response({
@@ -22,7 +32,7 @@ class GetOrderCountView(APIView):
 
 
 class GetCompletedOrderView(APIView):
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthUser]
 
     def get(self, request, business_user):  # wird in der url übergeben
         count = Order.objects.filter(

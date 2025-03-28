@@ -194,3 +194,62 @@ class PatchOrdersTests(APITestCase):
         response = self.client.delete(url, format="json")
 
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+    def test_get_order_count_no_auth(self):
+        self.client.credentials()
+        url = reverse('order-count', kwargs={'business_user': self.user_id1})
+
+        response = self.client.get(url, format="json")
+        # print(response.data)
+
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_get_order_count_auth(self):
+
+        url = reverse('order-count', kwargs={'business_user': self.user_id1})
+
+        response = self.client.get(url, format="json")
+        # print(response.data)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_order_no_business(self):
+
+        url = reverse('order-count', kwargs={'business_user': self.user_id2})
+
+        response = self.client.get(url, format="json")
+        # print(response.data)
+
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_get_order_count_auth(self):
+
+        url = reverse('completed-order-count',
+                      kwargs={'business_user': self.user_id1})
+
+        response = self.client.get(url, format="json")
+        # print(response.data)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['completed_order_count'], 0)
+        # complete setzen
+        self.client.credentials(HTTP_AUTHORIZATION=f'Token {self.token1}')
+        data = {
+            "status": "completed"
+        }
+
+        url = reverse('orders-detail', kwargs={'pk': self.order_id})
+
+        response = self.client.patch(url, data, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # neu zählen
+        url = reverse('completed-order-count',
+                      kwargs={'business_user': self.user_id1})
+
+        response = self.client.get(url, format="json")
+        # print(response.data)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['completed_order_count'], 1)

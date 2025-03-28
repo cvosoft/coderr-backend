@@ -11,5 +11,5 @@ urlpatterns = [
     path('order-count/<int:business_user>/',
          GetOrderCountView.as_view(), name='order-count'),
     path('completed-order-count/<int:business_user>/',
-         GetCompletedOrderView.as_view(), name='order-completed-count'),
+         GetCompletedOrderView.as_view(), name='completed-order-count'),
 ]
