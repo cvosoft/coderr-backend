@@ -24,5 +24,5 @@ class ReviewsPOSTSerializer(serializers.ModelSerializer):
 
         if Reviews.objects.filter(reviewer=reviewer, business_user=business_user).exists():
             raise serializers.ValidationError(
-                "Du hast diesen Anbieter bereits bewertet.")
+                "Du hast diesen Anbieter bereits bewertet!")
         return data
