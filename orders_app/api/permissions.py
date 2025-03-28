@@ -1,4 +1,4 @@
-from rest_framework.permissions import BasePermission, SAFE_METHODS
+from rest_framework.permissions import BasePermission, SAFE_METHODS, IsAdminUser
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework import status
 from rest_framework.exceptions import APIException
@@ -15,6 +15,18 @@ class IsCustomerUser(BasePermission):
             raise AuthenticationFailed("Nur Customer-User erlaubt.")
 
         return True
+    
+class IsBusinessUser(BasePermission):
+    def has_permission(self, request, view):
+        user = request.user
+
+        if not user or not user.is_authenticated:
+            raise CustomAuthenticationFailed()
+
+        if not hasattr(user, 'profile') or user.profile.type != "business":
+            raise AuthenticationFailed("Nur Business-User erlaubt.")
+
+        return True    
 
 
 class CustomAuthenticationFailed(APIException):

@@ -2,8 +2,8 @@ from rest_framework import generics, mixins, status
 from orders_app.models import Order
 from offers_app.models import OfferDetails
 from .serializers import *
-from .permissions import IsCustomerUser
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from .permissions import IsCustomerUser, IsBusinessUser
+from rest_framework.permissions import AllowAny, IsAuthenticated, IsAdminUser
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import viewsets
@@ -51,6 +51,10 @@ class OrderViewSet(viewsets.ModelViewSet):
     def get_permissions(self):
         if self.action in ['create']:
             return [IsCustomerUser()]
+        if self.action in ['destroy']:
+            return [IsAdminUser()]
+        if self.action in ['partial_update']:
+            return [IsBusinessUser()]
         return [IsAuthenticated()]
 
     def create(self, request, *args, **kwargs):
