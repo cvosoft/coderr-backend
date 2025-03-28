@@ -102,3 +102,13 @@ class ReviewsTests(APITestCase):
 
         for key in expected_keys:
             self.assertIn(key, response.data)
+
+    def test_get_reviews_no_auth(self):
+        # Authentifizierungs-Header setzen
+        self.client.credentials()
+
+        url = reverse('reviews-list')
+
+        response = self.client.get(url, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
