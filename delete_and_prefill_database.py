@@ -1,209 +1,63 @@
 import os
 import django
 import json
-import random
+from django.utils.timezone import now
 
 # Django-Umgebung konfigurieren
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'coderr.settings')
 django.setup()
 
+# Models importieren
+from django.contrib.auth import get_user_model
 from profiles_app.models import UserProfile
-from django.contrib.auth.models import User
+from offers_app.models import Offer, OfferDetails
+from orders_app.models import Order
+from reviews_app.models import Reviews
 
-# Pfad für Profilbilder
-PROFILE_IMAGE_PATH = "uploads/profiles/"  
-
+User = get_user_model()
+PROFILE_IMAGE_PATH = "uploads/profiles/"
 
 def delete_all_data():
-    """ Löscht ALLE User, Profile, Angebote und Reviews in der Datenbank """
-    print("🚨 Lösche alle User, Profile, Angebote und Reviews...")
-    User.objects.all().delete()  
-    print("✅ Alle Daten wurden erfolgreich gelöscht!")
+    print("🚨 Lösche Datenbankeinträge...")
+
+    Order.objects.all().delete()
+    Reviews.objects.all().delete()
+    OfferDetails.objects.all().delete()
+    Offer.objects.all().delete()
+    UserProfile.objects.all().delete()
+    User.objects.all().delete()
+
+    print("✅ Alle Daten wurden gelöscht!")
 
 
-def get_profile_image(username):
-    """ Gibt den Dateipfad des Profilbildes zurück oder `default.jpg`, falls keins existiert """
-    return f"{PROFILE_IMAGE_PATH}{username}.jpg"
-
-
-def create_user(username, email, password, user_type):
+def create_user_with_profile(username, email, password, user_type):
     if User.objects.filter(username=username).exists():
-        print(f"User '{username}' already exists!")
-        return None
-
-    if User.objects.filter(email=email).exists():
-        print(f"Email '{email}' is already in use!")
-        return None
+        print(f"⚠️  User '{username}' existiert bereits – wird übersprungen.")
+        return
 
     user = User.objects.create_user(username=username, email=email, password=password)
 
-    user_profile, created = UserProfile.objects.get_or_create(user=user)
-    user_profile.type = user_type
-    user_profile.file = get_profile_image(username)  
-    user_profile.save()
+    profile = UserProfile.objects.create(
+        user=user,
+        username=username,
+        first_name=username.capitalize(),
+        last_name=user_type.capitalize(),
+        file=f"{PROFILE_IMAGE_PATH}{username}.jpg",
+        location="Homeoffice",
+        tel="123456789",
+        description=f"Ich bin {username} und nutze Coderr als {user_type}.",
+        working_hours="9-17 Uhr",
+        type=user_type,
+        email=email,
+        created_at=now()
+    )
 
-    print(f"User '{username}' created successfully with type '{user_type}' and profile image '{user_profile.file}'!")
-
-    if user_type == "business":
-        create_offer_for_business(user)
+    print(f"✅ User '{username}' ({user_type}) erstellt!")
 
     return user
 
 
-def create_offer_for_business(user):
-    """ Erstellt automatisch ein IT-relevantes Angebot für jeden Business-User """
-    offers_data = [
-        {
-            "title": "Webentwicklung Komplett-Paket",
-            "image": "uploads/offers/web.jpg",
-            "description": "Ein maßgeschneidertes Webdesign-Paket für Unternehmen.",
-            "details": [
-                {
-                    "title": "Basic Webdesign",
-                    "revisions": 2,
-                    "delivery_time_in_days": 5,
-                    "price": 300,
-                    "features": ["Landing Page", "Responsive Design"],
-                    "offer_type": "basic"
-                },
-                {
-                    "title": "Standard Webdesign",
-                    "revisions": 5,
-                    "delivery_time_in_days": 10,
-                    "price": 600,
-                    "features": ["Landing Page", "Responsive Design", "Kontaktformular"],
-                    "offer_type": "standard"
-                },
-                {
-                    "title": "Premium Webdesign",
-                    "revisions": 10,
-                    "delivery_time_in_days": 15,
-                    "price": 1200,
-                    "features": ["Landing Page", "Responsive Design", "Kontaktformular", "CMS-Anbindung"],
-                    "offer_type": "premium"
-                }
-            ]
-        },
-        {
-            "title": "App-Entwicklung",
-            "image": "uploads/offers/app.jpg",
-            "description": "Native oder Hybrid-App-Lösungen für Ihr Business.",
-            "details": [
-                {
-                    "title": "Basic App",
-                    "revisions": 2,
-                    "delivery_time_in_days": 10,
-                    "price": 1000,
-                    "features": ["iOS oder Android", "Basic UI"],
-                    "offer_type": "basic"
-                },
-                {
-                    "title": "Standard App",
-                    "revisions": 5,
-                    "delivery_time_in_days": 20,
-                    "price": 2500,
-                    "features": ["iOS & Android", "Moderne UI", "Push-Benachrichtigungen"],
-                    "offer_type": "standard"
-                },
-                {
-                    "title": "Premium App",
-                    "revisions": 10,
-                    "delivery_time_in_days": 30,
-                    "price": 5000,
-                    "features": ["iOS & Android", "Moderne UI", "Push-Benachrichtigungen", "Datenbank-Anbindung"],
-                    "offer_type": "premium"
-                }
-            ]
-        },
-        {
-            "title": "Cybersecurity Beratung",
-            "image": "uploads/offers/cyber.jpg",
-            "description": "Expertenberatung für Sicherheitsstrategien und IT-Sicherheit.",
-            "details": [
-                {
-                    "title": "Basic Audit",
-                    "revisions": 1,
-                    "delivery_time_in_days": 7,
-                    "price": 500,
-                    "features": ["Grundlegendes Security Audit", "Bericht mit Empfehlungen"],
-                    "offer_type": "basic"
-                },
-                {
-                    "title": "Standard Audit",
-                    "revisions": 3,
-                    "delivery_time_in_days": 14,
-                    "price": 1200,
-                    "features": ["Umfassendes Security Audit", "Bericht mit detaillierten Handlungsempfehlungen", "Firewall-Check"],
-                    "offer_type": "standard"
-                },
-                {
-                    "title": "Premium Audit",
-                    "revisions": 5,
-                    "delivery_time_in_days": 21,
-                    "price": 3000,
-                    "features": ["Tiefgehende Sicherheitsanalyse", "Penetrationstests", "Schwachstellenbehebung"],
-                    "offer_type": "premium"
-                }
-            ]
-        }
-    ]
-
-    # Weise jedem Business-User ein Angebot basierend auf der Reihenfolge zu
-    business_users = list(User.objects.filter(userprofile__type="business"))
-    assigned_offer = offers_data[business_users.index(user) % len(offers_data)]
-
-    offer = Offer.objects.create(
-        title=assigned_offer["title"],
-        description=assigned_offer["description"],
-        creator=user,
-        image=assigned_offer["image"]
-    )
-
-    for detail in assigned_offer["details"]:
-        OfferDetail.objects.create(
-            offer=offer,
-            title=detail["title"],
-            revisions=detail["revisions"],
-            delivery_time_in_days=detail["delivery_time_in_days"],
-            price=detail["price"],
-            features=json.dumps(detail["features"]),
-            offer_type=detail["offer_type"]
-        )
-
-    print(f"✅ Offer '{offer.title}' created for Business-User '{user.username}'!")
-
-
-def create_reviews():
-    """ Kunden bewerten zufällig verschiedene Business-User mit sinnvollen Reviews """
-    customers = list(User.objects.filter(userprofile__type="customer"))
-    business_users = list(User.objects.filter(userprofile__type="business"))
-
-    reviews_data = [
-        {"rating": 5, "description": "Fantastische Arbeit! Die Website sieht professionell aus."},
-        {"rating": 4, "description": "Gute Leistung, aber es gab kleine Verzögerungen."},
-        {"rating": 5, "description": "Sehr professionell! Kommunikation war erstklassig."},
-        {"rating": 3, "description": "Qualität war okay, aber es hätte besser sein können."},
-        {"rating": 5, "description": "Perfekt! Alles wurde genau nach meinen Wünschen umgesetzt."},
-        {"rating": 4, "description": "Guter Service, aber die Reaktionszeit könnte verbessert werden."}
-    ]
-
-    for customer in customers:
-        business_user = random.choice(business_users)
-
-        if not Review.objects.filter(reviewer=customer, business_user=business_user).exists():
-            review_data = random.choice(reviews_data)
-            Review.objects.create(
-                reviewer=customer,
-                business_user=business_user,
-                rating=review_data["rating"],
-                description=review_data["description"]
-            )
-            print(f"✅ {customer.username} hat {business_user.username} mit {review_data['rating']} Sternen bewertet!")
-
-
-if __name__ == "__main__":
-    delete_all_data()
-
+def create_users():
     users_to_create = [
         {"username": "andrey", "email": "customer@example.com", "password": "asdasd", "user_type": "customer"},
         {"username": "peter", "email": "peter@example.com", "password": "customer1", "user_type": "customer"},
@@ -213,9 +67,165 @@ if __name__ == "__main__":
         {"username": "helga", "email": "helga@example.com", "password": "business2", "user_type": "business"},
     ]
 
+    created_users = []
     for user_data in users_to_create:
-        create_user(**user_data)
+        user = create_user_with_profile(**user_data)
+        if user:
+            created_users.append(user)
 
-    create_reviews()
+    return created_users
 
-    print("\n🎉 Datenbank-Reset abgeschlossen & neue User + Angebote + Reviews erstellt! 🚀")
+
+def create_offers_for_business_users(business_users):
+    offer_templates = [
+        {
+            "title": "Grafikdesign-Paket",
+            "image": None,
+            "description": "Ein umfassendes Grafikdesign-Paket für Unternehmen.",
+            "details": [
+                {
+                    "title": "Basic Design",
+                    "revisions": 2,
+                    "delivery_time_in_days": 5,
+                    "price": 100,
+                    "features": ["Logo Design", "Visitenkarte"],
+                    "offer_type": "basic"
+                },
+                {
+                    "title": "Standard Design",
+                    "revisions": 5,
+                    "delivery_time_in_days": 7,
+                    "price": 200,
+                    "features": ["Logo Design", "Visitenkarte", "Briefpapier"],
+                    "offer_type": "standard"
+                },
+                {
+                    "title": "Premium Design",
+                    "revisions": 10,
+                    "delivery_time_in_days": 10,
+                    "price": 500,
+                    "features": ["Logo Design", "Visitenkarte", "Briefpapier", "Flyer"],
+                    "offer_type": "premium"
+                }
+            ]
+        },
+        {
+            "title": "Webentwicklung Starter-Paket",
+            "image": None,
+            "description": "Professionelle Webentwicklung für kleine und mittlere Unternehmen.",
+            "details": [
+                {
+                    "title": "Basic Website",
+                    "revisions": 2,
+                    "delivery_time_in_days": 7,
+                    "price": 500,
+                    "features": ["OnePager", "Responsive Design"],
+                    "offer_type": "basic"
+                },
+                {
+                    "title": "Standard Website",
+                    "revisions": 5,
+                    "delivery_time_in_days": 14,
+                    "price": 1200,
+                    "features": ["Mehrseitige Website", "Kontaktformular", "Responsive Design"],
+                    "offer_type": "standard"
+                },
+                {
+                    "title": "Premium Website",
+                    "revisions": 10,
+                    "delivery_time_in_days": 21,
+                    "price": 2500,
+                    "features": ["CMS-Integration", "Blog-Bereich", "SEO-Optimierung"],
+                    "offer_type": "premium"
+                }
+            ]
+        },
+        {
+            "title": "App-Entwicklung Komplettlösung",
+            "image": None,
+            "description": "Von der Idee zur App: native & cross-platform Lösungen.",
+            "details": [
+                {
+                    "title": "Basic App",
+                    "revisions": 2,
+                    "delivery_time_in_days": 10,
+                    "price": 1500,
+                    "features": ["iOS oder Android", "Startbildschirm", "Kontaktformular"],
+                    "offer_type": "basic"
+                },
+                {
+                    "title": "Standard App",
+                    "revisions": 5,
+                    "delivery_time_in_days": 20,
+                    "price": 3000,
+                    "features": ["iOS & Android", "User-Login", "Backend-Anbindung"],
+                    "offer_type": "standard"
+                },
+                {
+                    "title": "Premium App",
+                    "revisions": 10,
+                    "delivery_time_in_days": 30,
+                    "price": 7000,
+                    "features": ["Offline-Modus", "Push-Benachrichtigungen", "Admin-Panel"],
+                    "offer_type": "premium"
+                }
+            ]
+        },
+    ]
+
+    for index, user in enumerate(business_users):
+        template = offer_templates[index % len(offer_templates)]
+
+        offer = Offer.objects.create(
+            user=user,
+            title=template["title"],
+            description=template["description"],
+            image=template["image"]
+        )
+
+        for detail in template["details"]:
+            OfferDetails.objects.create(
+                offer=offer,
+                title=detail["title"],
+                revisions=detail["revisions"],
+                delivery_time_in_days=detail["delivery_time_in_days"],
+                price=detail["price"],
+                features=detail["features"],
+                offer_type=detail["offer_type"]
+            )
+
+        print(f"📦 Angebot '{template['title']}' für {user.username} erstellt!")
+
+
+def create_reviews(customers, business_users):
+    reviews_data = [
+        {"rating": 5, "description": "Fantastische Zusammenarbeit – alles top!"},
+        {"rating": 4, "description": "Sehr gute Leistung, schnelle Umsetzung."},
+        {"rating": 5, "description": "Tolles Ergebnis, jederzeit wieder!"},
+        {"rating": 3, "description": "Okay, aber nicht ganz wie erwartet."},
+        {"rating": 4, "description": "Gute Arbeit, freundlicher Kontakt."},
+        {"rating": 5, "description": "Alles lief reibungslos, super Service!"}
+    ]
+
+    for business_user in business_users:
+        for i, customer in enumerate(customers):
+            review_data = reviews_data[(i + business_users.index(business_user)) % len(reviews_data)]
+            Reviews.objects.create(
+                reviewer=customer,
+                business_user=business_user,
+                rating=review_data["rating"],
+                description=review_data["description"]
+            )
+            print(f"⭐ {customer.username} hat {business_user.username} mit {review_data['rating']} Sternen bewertet.")
+
+
+if __name__ == "__main__":
+    delete_all_data()
+    users = create_users()
+    business_users = [user for user in users if user.profile.type == "business"]
+    customers = [user for user in users if user.profile.type == "customer"]
+    create_offers_for_business_users(business_users)
+    create_reviews(customers, business_users)
+    print("\n🎉 Alles bereit: Datenbank gefüllt mit Usern, Angeboten & Bewertungen! 🚀")
+
+
