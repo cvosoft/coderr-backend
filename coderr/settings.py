@@ -27,11 +27,13 @@ MEDIA_URL = '/media/'
 SECRET_KEY = 'django-insecure-qya2-(-9t)frlh701isq1(wkzjp(w%1+kf-tox^i3(wl+x)=3m'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = [
 	'v2202411136713300836.megasrv.de',
-	'127.0.0.1'
+	'coderr.christophvoelker.com',
+	'127.0.0.1',
+	'localhost'
 ]
 
 
@@ -69,6 +71,8 @@ MIDDLEWARE = [
 
 CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:5500",  # Beispiel für eine Live Server Extension in VS Code
+    "https://v2202411136713300836.megasrv.de",
+    "https://coderr.christophvoelker.com"
 ]
 
 ROOT_URLCONF = 'coderr.urls'
@@ -159,3 +163,9 @@ REST_FRAMEWORK = {
     'DATETIME_FORMAT':
         "%Y-%m-%dT%H:%M:%SZ",
 }
+
+
+CSRF_TRUSTED_ORIGINS = [
+    "https://v2202411136713300836.megasrv.de",
+    "https://coderr.christophvoelker.com"
+]
